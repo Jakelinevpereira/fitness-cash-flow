@@ -24,6 +24,11 @@ export function TransactionsView() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Tx | null>(null);
+  const [fDateFrom, setFDateFrom] = useState("");
+  const [fDateTo, setFDateTo] = useState("");
+  const [fType, setFType] = useState("all");
+  const [fCategory, setFCategory] = useState("all");
+  const [fStatus, setFStatus] = useState("all");
 
   const { data: rows = [], isLoading } = useQuery({
     queryKey: ["transactions"],
@@ -62,6 +67,20 @@ export function TransactionsView() {
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["transactions"] }); toast.success("Removido"); },
   });
 
+  const filtered = rows.filter((r) => {
+    if (fDateFrom && r.transaction_date < fDateFrom) return false;
+    if (fDateTo && r.transaction_date > fDateTo) return false;
+    if (fType !== "all" && r.type !== fType) return false;
+    if (fCategory !== "all" && r.category !== fCategory) return false;
+    if (fStatus === "pago" && !r.paid) return false;
+    if (fStatus === "pendente" && r.paid) return false;
+    return true;
+  });
+  const totalReceitas = filtered.filter((r) => r.type === "receita").reduce((s, r) => s + Number(r.total), 0);
+  const totalDespesas = filtered.filter((r) => r.type === "despesa" || r.type === "compra").reduce((s, r) => s + Number(r.total), 0);
+  const saldo = totalReceitas - totalDespesas;
+  const filterCategories = Array.from(new Set(rows.map((r) => r.category))).filter(Boolean);
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-4 flex-wrap">
@@ -75,6 +94,56 @@ export function TransactionsView() {
           </DialogTrigger>
           <TxDialog editing={editing} onSubmit={(d) => upsert.mutate(d)} loading={upsert.isPending} />
         </Dialog>
+      </div>
+
+      <Card>
+        <CardContent className="p-4 flex flex-wrap items-end gap-3">
+          <div className="space-y-1.5">
+            <Label className="text-xs">De</Label>
+            <Input type="date" className="w-40" value={fDateFrom} onChange={(e) => setFDateFrom(e.target.value)} />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs">Até</Label>
+            <Input type="date" className="w-40" value={fDateTo} onChange={(e) => setFDateTo(e.target.value)} />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs">Tipo</Label>
+            <Select value={fType} onValueChange={setFType}>
+              <SelectTrigger className="w-44"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos</SelectItem>
+                {TYPES.map((t) => <SelectItem key={t} value={t}>{TYPE_LABEL[t]}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs">Categoria</Label>
+            <Select value={fCategory} onValueChange={setFCategory}>
+              <SelectTrigger className="w-44"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas</SelectItem>
+                {filterCategories.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs">Status</Label>
+            <Select value={fStatus} onValueChange={setFStatus}>
+              <SelectTrigger className="w-36"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos</SelectItem>
+                <SelectItem value="pago">Pago</SelectItem>
+                <SelectItem value="pendente">Pendente</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground">Receitas</p><p className="text-lg font-bold text-success">{formatBRL(totalReceitas)}</p></CardContent></Card>
+        <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground">Despesas</p><p className="text-lg font-bold text-destructive">{formatBRL(totalDespesas)}</p></CardContent></Card>
+        <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground">Saldo</p><p className={`text-lg font-bold ${saldo >= 0 ? "text-success" : "text-destructive"}`}>{formatBRL(saldo)}</p></CardContent></Card>
       </div>
 
       <Card>
@@ -96,9 +165,9 @@ export function TransactionsView() {
             <TableBody>
               {isLoading ? (
                 <TableRow><TableCell colSpan={9} className="text-center py-8 text-muted-foreground">Carregando…</TableCell></TableRow>
-              ) : rows.length === 0 ? (
+              ) : filtered.length === 0 ? (
                 <TableRow><TableCell colSpan={9} className="text-center py-8 text-muted-foreground">Nenhuma transação</TableCell></TableRow>
-              ) : rows.map((r) => (
+              ) : filtered.map((r) => (
                 <TableRow key={r.id}>
                   <TableCell>{formatDate(r.transaction_date)}</TableCell>
                   <TableCell>
@@ -126,6 +195,15 @@ export function TransactionsView() {
                 </TableRow>
               ))}
             </TableBody>
+            {filtered.length > 0 && (
+              <tfoot className="border-t bg-muted/50 font-medium">
+                <TableRow>
+                  <TableCell colSpan={6} className="text-right font-semibold">Total filtrado</TableCell>
+                  <TableCell className="text-right font-bold">{formatBRL(filtered.reduce((s, r) => s + Number(r.total), 0))}</TableCell>
+                  <TableCell colSpan={2}></TableCell>
+                </TableRow>
+              </tfoot>
+            )}
           </Table>
         </CardContent>
       </Card>

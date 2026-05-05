@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Pencil, Trash2 } from "lucide-react";
@@ -26,6 +27,8 @@ function ProductsPage() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Product | null>(null);
+  const [fName, setFName] = useState("");
+  const [fCategory, setFCategory] = useState("all");
 
   const { data: rows = [] } = useQuery({
     queryKey: ["products"],
@@ -55,6 +58,15 @@ function ProductsPage() {
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["products"] }); toast.success("Removido"); },
   });
 
+  const categories = Array.from(new Set(rows.map((p) => p.category).filter(Boolean))) as string[];
+  const filtered = rows.filter((p) => {
+    if (fName && !p.name.toLowerCase().includes(fName.toLowerCase())) return false;
+    if (fCategory !== "all" && (p.category ?? "") !== fCategory) return false;
+    return true;
+  });
+  const totalStockValue = filtered.reduce((s, p) => s + Number(p.sale_price) * Number(p.stock), 0);
+  const totalCostValue = filtered.reduce((s, p) => s + Number(p.cost_price) * Number(p.stock), 0);
+
   return (
     <AppLayout>
       <div className="space-y-6">
@@ -68,6 +80,25 @@ function ProductsPage() {
             <ProductDialog editing={editing} onSubmit={(d) => upsert.mutate(d)} loading={upsert.isPending} />
           </Dialog>
         </div>
+
+        <Card>
+          <CardContent className="p-4 flex flex-wrap items-end gap-3">
+            <div className="space-y-1.5">
+              <Label className="text-xs">Produto</Label>
+              <Input className="w-48" placeholder="Buscar" value={fName} onChange={(e) => setFName(e.target.value)} />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Categoria</Label>
+              <Select value={fCategory} onValueChange={setFCategory}>
+                <SelectTrigger className="w-48"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas</SelectItem>
+                  {categories.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+          </CardContent>
+        </Card>
 
         <Card>
           <CardContent className="p-0 overflow-x-auto">
@@ -84,9 +115,9 @@ function ProductsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {rows.length === 0 ? (
+                {filtered.length === 0 ? (
                   <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Nenhum produto</TableCell></TableRow>
-                ) : rows.map((p) => {
+                ) : filtered.map((p) => {
                   const margin = Number(p.sale_price) - Number(p.cost_price);
                   return (
                     <TableRow key={p.id}>
@@ -106,6 +137,16 @@ function ProductsPage() {
                   );
                 })}
               </TableBody>
+              {filtered.length > 0 && (
+                <tfoot className="border-t bg-muted/50 font-medium">
+                  <TableRow>
+                    <TableCell colSpan={2} className="text-right font-semibold">Totais (estoque)</TableCell>
+                    <TableCell className="text-right">{formatBRL(totalCostValue)}</TableCell>
+                    <TableCell className="text-right text-success font-bold">{formatBRL(totalStockValue)}</TableCell>
+                    <TableCell colSpan={3}></TableCell>
+                  </TableRow>
+                </tfoot>
+              )}
             </Table>
           </CardContent>
         </Card>

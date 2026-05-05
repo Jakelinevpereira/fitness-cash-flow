@@ -34,8 +34,13 @@ function SalesPage() {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Sale | null>(null);
   const today = new Date();
-  const [reportMonth, setReportMonth] = useState(String(today.getMonth() + 1));
+  const [reportMonth, setReportMonth] = useState("all");
   const [reportYear, setReportYear] = useState(String(today.getFullYear()));
+  const [fProduct, setFProduct] = useState("");
+  const [fCustomer, setFCustomer] = useState("");
+  const [fPayment, setFPayment] = useState("all");
+  const [fDateFrom, setFDateFrom] = useState("");
+  const [fDateTo, setFDateTo] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
 
   const { data: rows = [] } = useQuery({
@@ -75,23 +80,32 @@ function SalesPage() {
   const total = rows.reduce((s, r) => s + Number(r.total), 0);
 
   const filterMonth = (sales: Sale[]) => {
-    const m = Number(reportMonth), y = Number(reportYear);
+    const y = Number(reportYear);
     return sales.filter((s) => {
       const [yy, mm] = s.sale_date.split("-").map(Number);
-      return yy === y && mm === m;
+      if (yy !== y) return false;
+      if (reportMonth !== "all" && mm !== Number(reportMonth)) return false;
+      if (fDateFrom && s.sale_date < fDateFrom) return false;
+      if (fDateTo && s.sale_date > fDateTo) return false;
+      if (fProduct && !s.product_name.toLowerCase().includes(fProduct.toLowerCase())) return false;
+      if (fCustomer && !(s.customer_name ?? "").toLowerCase().includes(fCustomer.toLowerCase())) return false;
+      if (fPayment !== "all" && s.payment_method !== fPayment) return false;
+      return true;
     });
   };
 
+  const filtered = filterMonth(rows);
+  const filteredTotal = filtered.reduce((s, r) => s + Number(r.total), 0);
+
   const generatePDF = () => {
-    const list = filterMonth(rows);
-    if (list.length === 0) { toast.error("Sem vendas neste mês"); return; }
+    const list = filtered;
+    if (list.length === 0) { toast.error("Sem vendas no filtro"); return; }
     const doc = new jsPDF();
-    const monthLabel = `${MONTHS[Number(reportMonth) - 1]} / ${reportYear}`;
+    const monthLabel = reportMonth === "all" ? `Todos / ${reportYear}` : `${MONTHS[Number(reportMonth) - 1]} / ${reportYear}`;
     doc.setFontSize(16);
     doc.text("Relatório de Vendas", 14, 18);
     doc.setFontSize(11);
     doc.text(`Período: ${monthLabel}`, 14, 26);
-    const totalMes = list.reduce((s, r) => s + Number(r.total), 0);
     autoTable(doc, {
       startY: 32,
       head: [["Data", "Produto", "Cliente", "Qtd", "Unit.", "Total", "Pagamento"]],
@@ -104,17 +118,18 @@ function SalesPage() {
         formatBRL(Number(r.total)),
         r.payment_method ?? "-",
       ]),
-      foot: [["", "", "", "", "Total", formatBRL(totalMes), ""]],
+      foot: [["", "", "", "", "Total", formatBRL(filteredTotal), ""]],
       styles: { fontSize: 9 },
       headStyles: { fillColor: [30, 41, 59] },
     });
-    doc.save(`vendas-${reportYear}-${String(reportMonth).padStart(2, "0")}.pdf`);
+    const suffix = reportMonth === "all" ? "todos" : String(reportMonth).padStart(2, "0");
+    doc.save(`vendas-${reportYear}-${suffix}.pdf`);
     toast.success("PDF gerado");
   };
 
   const exportXLSX = () => {
-    const list = filterMonth(rows);
-    if (list.length === 0) { toast.error("Sem vendas neste mês"); return; }
+    const list = filtered;
+    if (list.length === 0) { toast.error("Sem vendas no filtro"); return; }
     const data = list.map((r) => ({
       Data: r.sale_date,
       Produto: r.product_name,
@@ -127,7 +142,8 @@ function SalesPage() {
     const ws = XLSX.utils.json_to_sheet(data);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Vendas");
-    XLSX.writeFile(wb, `vendas-${reportYear}-${String(reportMonth).padStart(2, "0")}.xlsx`);
+    const suffix = reportMonth === "all" ? "todos" : String(reportMonth).padStart(2, "0");
+    XLSX.writeFile(wb, `vendas-${reportYear}-${suffix}.xlsx`);
   };
 
   const importXLSX = async (file: File) => {
@@ -170,7 +186,7 @@ function SalesPage() {
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div>
             <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Vendas</h1>
-            <p className="text-muted-foreground text-sm mt-1">Total: <span className="font-semibold text-foreground">{formatBRL(total)}</span></p>
+            <p className="text-muted-foreground text-sm mt-1">Total geral: <span className="font-semibold text-foreground">{formatBRL(total)}</span></p>
           </div>
           <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) setEditing(null); }}>
             <DialogTrigger asChild><Button><Plus className="h-4 w-4 mr-2" />Nova venda</Button></DialogTrigger>
@@ -184,12 +200,41 @@ function SalesPage() {
               <Label className="text-xs">Mês</Label>
               <Select value={reportMonth} onValueChange={setReportMonth}>
                 <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
-                <SelectContent>{MONTHS.map((m, i) => <SelectItem key={i} value={String(i + 1)}>{m}</SelectItem>)}</SelectContent>
+                <SelectContent>
+                  <SelectItem value="all">Todos</SelectItem>
+                  {MONTHS.map((m, i) => <SelectItem key={i} value={String(i + 1)}>{m}</SelectItem>)}
+                </SelectContent>
               </Select>
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs">Ano</Label>
               <Input className="w-24" value={reportYear} onChange={(e) => setReportYear(e.target.value)} />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">De</Label>
+              <Input type="date" className="w-40" value={fDateFrom} onChange={(e) => setFDateFrom(e.target.value)} />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Até</Label>
+              <Input type="date" className="w-40" value={fDateTo} onChange={(e) => setFDateTo(e.target.value)} />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Produto</Label>
+              <Input className="w-40" placeholder="Buscar" value={fProduct} onChange={(e) => setFProduct(e.target.value)} />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Cliente</Label>
+              <Input className="w-40" placeholder="Buscar" value={fCustomer} onChange={(e) => setFCustomer(e.target.value)} />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Pagamento</Label>
+              <Select value={fPayment} onValueChange={setFPayment}>
+                <SelectTrigger className="w-36"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos</SelectItem>
+                  {PAYMENTS.map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+                </SelectContent>
+              </Select>
             </div>
             <Button variant="outline" onClick={generatePDF}><FileText className="h-4 w-4 mr-2" />Relatório PDF</Button>
             <Button variant="outline" onClick={exportXLSX}><FileDown className="h-4 w-4 mr-2" />Exportar planilha</Button>
@@ -216,9 +261,9 @@ function SalesPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {rows.length === 0 ? (
+                {filtered.length === 0 ? (
                   <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">Nenhuma venda</TableCell></TableRow>
-                ) : rows.map((r) => (
+                ) : filtered.map((r) => (
                   <TableRow key={r.id}>
                     <TableCell>{formatDate(r.sale_date)}</TableCell>
                     <TableCell className="font-medium">{r.product_name}</TableCell>
@@ -236,6 +281,15 @@ function SalesPage() {
                   </TableRow>
                 ))}
               </TableBody>
+              {filtered.length > 0 && (
+                <tfoot className="border-t bg-muted/50 font-medium">
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-right font-semibold">Total filtrado</TableCell>
+                    <TableCell className="text-right font-bold text-success">{formatBRL(filteredTotal)}</TableCell>
+                    <TableCell colSpan={2}></TableCell>
+                  </TableRow>
+                </tfoot>
+              )}
             </Table>
           </CardContent>
         </Card>
