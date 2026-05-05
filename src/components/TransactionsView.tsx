@@ -12,6 +12,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { formatBRL, formatDate } from "@/lib/format";
+import { DateBRInput } from "@/components/DateBRInput";
 import type { Tables } from "@/integrations/supabase/types";
 
 type Tx = Tables<"transactions">;
