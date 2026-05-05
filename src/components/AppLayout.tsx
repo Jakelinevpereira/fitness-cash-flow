@@ -1,4 +1,5 @@
-import { Link, Outlet, useLocation } from "@tanstack/react-router";
+import { Link, useLocation } from "@tanstack/react-router";
+import type { ReactNode } from "react";
 import { LayoutDashboard, Package, ShoppingCart, Receipt, Wallet } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -9,7 +10,7 @@ const nav = [
   { to: "/vendas", label: "Vendas", icon: ShoppingCart },
 ] as const;
 
-export function AppLayout() {
+export function AppLayout({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
   return (
     <div className="flex min-h-screen bg-background">
@@ -62,7 +63,7 @@ export function AppLayout() {
         </nav>
 
         <main className="flex-1 p-4 md:p-8 overflow-x-hidden">
-          <Outlet />
+          {children}
         </main>
       </div>
     </div>
