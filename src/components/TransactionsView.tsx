@@ -85,11 +85,20 @@ export function TransactionsView() {
     if (fStatus === "pendente" && r.paid) return false;
     return true;
   });
-  const totalEntradas = filtered.filter((r) => r.type === "receita" || r.type === "saldo_inicial").reduce((s, r) => s + Number(r.total), 0);
-  const totalReceitas = filtered.filter((r) => r.type === "receita").reduce((s, r) => s + Number(r.total), 0);
+  const filteredSales = sales.filter((s) => {
+    if (fDateFrom && s.sale_date < fDateFrom) return false;
+    if (fDateTo && s.sale_date > fDateTo) return false;
+    if (fType !== "all" && fType !== "receita") return false;
+    if (fCategory !== "all" && fCategory !== "Vendas") return false;
+    if (fStatus === "pendente") return false;
+    return true;
+  });
+  const totalVendas = filteredSales.reduce((s, r) => s + Number(r.total), 0);
+  const totalReceitasTx = filtered.filter((r) => r.type === "receita").reduce((s, r) => s + Number(r.total), 0);
+  const totalReceitas = totalReceitasTx + totalVendas;
   const totalSaldoInicial = filtered.filter((r) => r.type === "saldo_inicial").reduce((s, r) => s + Number(r.total), 0);
   const totalDespesas = filtered.filter((r) => r.type === "despesa" || r.type === "compra").reduce((s, r) => s + Number(r.total), 0);
-  const saldo = totalEntradas - totalDespesas;
+  const saldo = totalSaldoInicial + totalReceitas - totalDespesas;
   const filterCategories = Array.from(new Set(rows.map((r) => r.category))).filter(Boolean);
 
   return (
