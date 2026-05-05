@@ -34,8 +34,13 @@ function SalesPage() {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Sale | null>(null);
   const today = new Date();
-  const [reportMonth, setReportMonth] = useState(String(today.getMonth() + 1));
+  const [reportMonth, setReportMonth] = useState("all");
   const [reportYear, setReportYear] = useState(String(today.getFullYear()));
+  const [fProduct, setFProduct] = useState("");
+  const [fCustomer, setFCustomer] = useState("");
+  const [fPayment, setFPayment] = useState("all");
+  const [fDateFrom, setFDateFrom] = useState("");
+  const [fDateTo, setFDateTo] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
 
   const { data: rows = [] } = useQuery({
