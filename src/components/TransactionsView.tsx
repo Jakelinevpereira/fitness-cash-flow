@@ -16,8 +16,9 @@ import type { Tables } from "@/integrations/supabase/types";
 
 type Tx = Tables<"transactions">;
 
-const TYPES = ["receita", "despesa", "compra"] as const;
-const CATEGORIES = ["Maquininha", "Compras", "Embalagem", "Marketing/Outros", "Frete", "Vendas", "Aluguel", "Salário", "Outros"];
+const TYPES = ["receita", "despesa", "compra", "saldo_inicial"] as const;
+const TYPE_LABEL: Record<string, string> = { receita: "Receita", despesa: "Despesa Operacional", compra: "Compra de Estoque", saldo_inicial: "Saldo Inicial" };
+const CATEGORIES = ["Maquininha", "Embalagem", "Marketing/Outros", "Frete", "Aluguel", "Salário", "Estoque", "Caixa", "Outros"];
 
 export function TransactionsView() {
   const qc = useQueryClient();
@@ -101,8 +102,13 @@ export function TransactionsView() {
                 <TableRow key={r.id}>
                   <TableCell>{formatDate(r.transaction_date)}</TableCell>
                   <TableCell>
-                    <Badge variant={r.type === "receita" ? "default" : "secondary"} className={r.type === "receita" ? "bg-success text-success-foreground" : r.type === "compra" ? "bg-accent text-accent-foreground" : "bg-destructive text-destructive-foreground"}>
-                      {r.type}
+                    <Badge className={
+                      r.type === "receita" ? "bg-success text-success-foreground" :
+                      r.type === "saldo_inicial" ? "bg-accent text-accent-foreground" :
+                      r.type === "compra" ? "bg-warning text-warning-foreground" :
+                      "bg-destructive text-destructive-foreground"
+                    }>
+                      {TYPE_LABEL[r.type] ?? r.type}
                     </Badge>
                   </TableCell>
                   <TableCell>{r.category}</TableCell>
@@ -147,7 +153,7 @@ function TxDialog({ editing, onSubmit, loading }: { editing: Tx | null; onSubmit
           <Field label="Tipo">
             <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v })}>
               <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>{TYPES.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
+              <SelectContent>{TYPES.map((t) => <SelectItem key={t} value={t}>{TYPE_LABEL[t]}</SelectItem>)}</SelectContent>
             </Select>
           </Field>
           <Field label="Categoria">
