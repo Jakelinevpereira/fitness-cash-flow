@@ -39,6 +39,15 @@ export function TransactionsView() {
     },
   });
 
+  const { data: sales = [] } = useQuery({
+    queryKey: ["sales"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("sales").select("*").order("sale_date", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+  });
+
   const upsert = useMutation({
     mutationFn: async (payload: Partial<Tx> & { id?: string }) => {
       const total = Number(payload.quantity ?? 1) * Number(payload.unit_value ?? 0);
@@ -76,11 +85,20 @@ export function TransactionsView() {
     if (fStatus === "pendente" && r.paid) return false;
     return true;
   });
-  const totalEntradas = filtered.filter((r) => r.type === "receita" || r.type === "saldo_inicial").reduce((s, r) => s + Number(r.total), 0);
-  const totalReceitas = filtered.filter((r) => r.type === "receita").reduce((s, r) => s + Number(r.total), 0);
+  const filteredSales = sales.filter((s) => {
+    if (fDateFrom && s.sale_date < fDateFrom) return false;
+    if (fDateTo && s.sale_date > fDateTo) return false;
+    if (fType !== "all" && fType !== "receita") return false;
+    if (fCategory !== "all" && fCategory !== "Vendas") return false;
+    if (fStatus === "pendente") return false;
+    return true;
+  });
+  const totalVendas = filteredSales.reduce((s, r) => s + Number(r.total), 0);
+  const totalReceitasTx = filtered.filter((r) => r.type === "receita").reduce((s, r) => s + Number(r.total), 0);
+  const totalReceitas = totalReceitasTx + totalVendas;
   const totalSaldoInicial = filtered.filter((r) => r.type === "saldo_inicial").reduce((s, r) => s + Number(r.total), 0);
   const totalDespesas = filtered.filter((r) => r.type === "despesa" || r.type === "compra").reduce((s, r) => s + Number(r.total), 0);
-  const saldo = totalEntradas - totalDespesas;
+  const saldo = totalSaldoInicial + totalReceitas - totalDespesas;
   const filterCategories = Array.from(new Set(rows.map((r) => r.category))).filter(Boolean);
 
   return (
@@ -102,11 +120,11 @@ export function TransactionsView() {
         <CardContent className="p-4 flex flex-wrap items-end gap-3">
           <div className="space-y-1.5">
             <Label className="text-xs">De</Label>
-            <Input type="date" className="w-40" value={fDateFrom} onChange={(e) => setFDateFrom(e.target.value)} />
+            <DateBRInput value={fDateFrom} onChange={setFDateFrom} />
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs">Até</Label>
-            <Input type="date" className="w-40" value={fDateTo} onChange={(e) => setFDateTo(e.target.value)} />
+            <DateBRInput value={fDateTo} onChange={setFDateTo} />
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs">Tipo</Label>
@@ -278,4 +296,43 @@ function TxDialog({ editing, onSubmit, loading }: { editing: Tx | null; onSubmit
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return <div className="space-y-1.5"><Label className="text-xs">{label}</Label>{children}</div>;
+}
+
+// Input dd/mm/aaaa que armazena/devolve ISO yyyy-mm-dd
+function DateBRInput({ value, onChange }: { value: string; onChange: (iso: string) => void }) {
+  const isoToBr = (iso: string) => {
+    if (!iso) return "";
+    const [y, m, d] = iso.split("-");
+    return y && m && d ? `${d}/${m}/${y}` : "";
+  };
+  const [text, setText] = useState(isoToBr(value));
+  // sincroniza quando valor externo muda (ex: limpar)
+  if (value === "" && text !== "") {
+    // noop, gerenciado pelo onChange abaixo
+  }
+  const handleChange = (raw: string) => {
+    // mantém apenas dígitos, aplica máscara dd/mm/aaaa
+    const digits = raw.replace(/\D/g, "").slice(0, 8);
+    let masked = digits;
+    if (digits.length > 4) masked = `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`;
+    else if (digits.length > 2) masked = `${digits.slice(0, 2)}/${digits.slice(2)}`;
+    setText(masked);
+    if (digits.length === 8) {
+      const d = digits.slice(0, 2);
+      const m = digits.slice(2, 4);
+      const y = digits.slice(4, 8);
+      onChange(`${y}-${m}-${d}`);
+    } else if (digits.length === 0) {
+      onChange("");
+    }
+  };
+  return (
+    <Input
+      placeholder="dd/mm/aaaa"
+      className="w-40"
+      inputMode="numeric"
+      value={text}
+      onChange={(e) => handleChange(e.target.value)}
+    />
+  );
 }
