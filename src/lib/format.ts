@@ -6,3 +6,9 @@ export const formatDate = (d: string) => {
   const [y, m, day] = d.split("-");
   return `${day}/${m}/${y}`;
 };
+
+export const formatMonth = (ym: string) => {
+  if (!ym) return "";
+  const [y, m] = ym.split("-");
+  return `${m}/${y}`;
+};

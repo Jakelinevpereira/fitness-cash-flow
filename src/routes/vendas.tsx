@@ -131,7 +131,7 @@ function SalesPage() {
     const list = filtered;
     if (list.length === 0) { toast.error("Sem vendas no filtro"); return; }
     const data = list.map((r) => ({
-      Data: r.sale_date,
+      Data: formatDate(r.sale_date),
       Produto: r.product_name,
       Cliente: r.customer_name ?? "",
       Quantidade: r.quantity,
