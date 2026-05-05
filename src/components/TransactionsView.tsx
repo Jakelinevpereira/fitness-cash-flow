@@ -24,6 +24,11 @@ export function TransactionsView() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Tx | null>(null);
+  const [fDateFrom, setFDateFrom] = useState("");
+  const [fDateTo, setFDateTo] = useState("");
+  const [fType, setFType] = useState("all");
+  const [fCategory, setFCategory] = useState("all");
+  const [fStatus, setFStatus] = useState("all");
 
   const { data: rows = [], isLoading } = useQuery({
     queryKey: ["transactions"],
