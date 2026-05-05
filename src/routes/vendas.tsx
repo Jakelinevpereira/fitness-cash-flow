@@ -213,11 +213,11 @@ function SalesPage() {
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs">De</Label>
-              <Input type="date" className="w-40" value={fDateFrom} onChange={(e) => setFDateFrom(e.target.value)} />
+              <DateBRInput value={fDateFrom} onChange={setFDateFrom} />
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs">Até</Label>
-              <Input type="date" className="w-40" value={fDateTo} onChange={(e) => setFDateTo(e.target.value)} />
+              <DateBRInput value={fDateTo} onChange={setFDateTo} />
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs">Produto</Label>
