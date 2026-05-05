@@ -80,12 +80,22 @@ function SalesPage() {
   const total = rows.reduce((s, r) => s + Number(r.total), 0);
 
   const filterMonth = (sales: Sale[]) => {
-    const m = Number(reportMonth), y = Number(reportYear);
+    const y = Number(reportYear);
     return sales.filter((s) => {
       const [yy, mm] = s.sale_date.split("-").map(Number);
-      return yy === y && mm === m;
+      if (yy !== y) return false;
+      if (reportMonth !== "all" && mm !== Number(reportMonth)) return false;
+      if (fDateFrom && s.sale_date < fDateFrom) return false;
+      if (fDateTo && s.sale_date > fDateTo) return false;
+      if (fProduct && !s.product_name.toLowerCase().includes(fProduct.toLowerCase())) return false;
+      if (fCustomer && !(s.customer_name ?? "").toLowerCase().includes(fCustomer.toLowerCase())) return false;
+      if (fPayment !== "all" && s.payment_method !== fPayment) return false;
+      return true;
     });
   };
+
+  const filtered = filterMonth(rows);
+  const filteredTotal = filtered.reduce((s, r) => s + Number(r.total), 0);
 
   const generatePDF = () => {
     const list = filterMonth(rows);
