@@ -98,15 +98,14 @@ function SalesPage() {
   const filteredTotal = filtered.reduce((s, r) => s + Number(r.total), 0);
 
   const generatePDF = () => {
-    const list = filterMonth(rows);
-    if (list.length === 0) { toast.error("Sem vendas neste mês"); return; }
+    const list = filtered;
+    if (list.length === 0) { toast.error("Sem vendas no filtro"); return; }
     const doc = new jsPDF();
-    const monthLabel = `${MONTHS[Number(reportMonth) - 1]} / ${reportYear}`;
+    const monthLabel = reportMonth === "all" ? `Todos / ${reportYear}` : `${MONTHS[Number(reportMonth) - 1]} / ${reportYear}`;
     doc.setFontSize(16);
     doc.text("Relatório de Vendas", 14, 18);
     doc.setFontSize(11);
     doc.text(`Período: ${monthLabel}`, 14, 26);
-    const totalMes = list.reduce((s, r) => s + Number(r.total), 0);
     autoTable(doc, {
       startY: 32,
       head: [["Data", "Produto", "Cliente", "Qtd", "Unit.", "Total", "Pagamento"]],
@@ -119,17 +118,18 @@ function SalesPage() {
         formatBRL(Number(r.total)),
         r.payment_method ?? "-",
       ]),
-      foot: [["", "", "", "", "Total", formatBRL(totalMes), ""]],
+      foot: [["", "", "", "", "Total", formatBRL(filteredTotal), ""]],
       styles: { fontSize: 9 },
       headStyles: { fillColor: [30, 41, 59] },
     });
-    doc.save(`vendas-${reportYear}-${String(reportMonth).padStart(2, "0")}.pdf`);
+    const suffix = reportMonth === "all" ? "todos" : String(reportMonth).padStart(2, "0");
+    doc.save(`vendas-${reportYear}-${suffix}.pdf`);
     toast.success("PDF gerado");
   };
 
   const exportXLSX = () => {
-    const list = filterMonth(rows);
-    if (list.length === 0) { toast.error("Sem vendas neste mês"); return; }
+    const list = filtered;
+    if (list.length === 0) { toast.error("Sem vendas no filtro"); return; }
     const data = list.map((r) => ({
       Data: r.sale_date,
       Produto: r.product_name,
@@ -142,7 +142,8 @@ function SalesPage() {
     const ws = XLSX.utils.json_to_sheet(data);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Vendas");
-    XLSX.writeFile(wb, `vendas-${reportYear}-${String(reportMonth).padStart(2, "0")}.xlsx`);
+    const suffix = reportMonth === "all" ? "todos" : String(reportMonth).padStart(2, "0");
+    XLSX.writeFile(wb, `vendas-${reportYear}-${suffix}.xlsx`);
   };
 
   const importXLSX = async (file: File) => {
