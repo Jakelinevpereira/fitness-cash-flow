@@ -76,9 +76,11 @@ export function TransactionsView() {
     if (fStatus === "pendente" && r.paid) return false;
     return true;
   });
+  const totalEntradas = filtered.filter((r) => r.type === "receita" || r.type === "saldo_inicial").reduce((s, r) => s + Number(r.total), 0);
   const totalReceitas = filtered.filter((r) => r.type === "receita").reduce((s, r) => s + Number(r.total), 0);
+  const totalSaldoInicial = filtered.filter((r) => r.type === "saldo_inicial").reduce((s, r) => s + Number(r.total), 0);
   const totalDespesas = filtered.filter((r) => r.type === "despesa" || r.type === "compra").reduce((s, r) => s + Number(r.total), 0);
-  const saldo = totalReceitas - totalDespesas;
+  const saldo = totalEntradas - totalDespesas;
   const filterCategories = Array.from(new Set(rows.map((r) => r.category))).filter(Boolean);
 
   return (
