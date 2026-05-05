@@ -338,7 +338,7 @@ function SaleDialog({ editing, products, onSubmit, loading }: { editing: Sale | 
           <Fld label="Total"><Input value={formatBRL(total)} disabled /></Fld>
         </div>
         <div className="grid grid-cols-2 gap-3">
-          <Fld label="Data"><Input type="date" value={f.sale_date} onChange={(e) => setF({ ...f, sale_date: e.target.value })} /></Fld>
+          <Fld label="Data"><DateBRInput className="w-full" value={f.sale_date} onChange={(iso) => setF({ ...f, sale_date: iso })} /></Fld>
           <Fld label="Pagamento">
             <Select value={f.payment_method} onValueChange={(v) => setF({ ...f, payment_method: v })}>
               <SelectTrigger><SelectValue /></SelectTrigger>
