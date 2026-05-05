@@ -14,7 +14,119 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      products: {
+        Row: {
+          category: string | null
+          cost_price: number
+          created_at: string
+          id: string
+          name: string
+          sale_price: number
+          stock: number
+        }
+        Insert: {
+          category?: string | null
+          cost_price?: number
+          created_at?: string
+          id?: string
+          name: string
+          sale_price?: number
+          stock?: number
+        }
+        Update: {
+          category?: string | null
+          cost_price?: number
+          created_at?: string
+          id?: string
+          name?: string
+          sale_price?: number
+          stock?: number
+        }
+        Relationships: []
+      }
+      sales: {
+        Row: {
+          created_at: string
+          id: string
+          payment_method: string | null
+          product_id: string | null
+          product_name: string
+          quantity: number
+          sale_date: string
+          total: number
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          payment_method?: string | null
+          product_id?: string | null
+          product_name: string
+          quantity?: number
+          sale_date?: string
+          total?: number
+          unit_price?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          payment_method?: string | null
+          product_id?: string | null
+          product_name?: string
+          quantity?: number
+          sale_date?: string
+          total?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transactions: {
+        Row: {
+          category: string
+          created_at: string
+          description: string
+          id: string
+          paid: boolean
+          quantity: number
+          total: number
+          transaction_date: string
+          type: string
+          unit_value: number
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description: string
+          id?: string
+          paid?: boolean
+          quantity?: number
+          total?: number
+          transaction_date?: string
+          type: string
+          unit_value?: number
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string
+          id?: string
+          paid?: boolean
+          quantity?: number
+          total?: number
+          transaction_date?: string
+          type?: string
+          unit_value?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
