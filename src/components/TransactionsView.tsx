@@ -39,6 +39,15 @@ export function TransactionsView() {
     },
   });
 
+  const { data: sales = [] } = useQuery({
+    queryKey: ["sales"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("sales").select("*").order("sale_date", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+  });
+
   const upsert = useMutation({
     mutationFn: async (payload: Partial<Tx> & { id?: string }) => {
       const total = Number(payload.quantity ?? 1) * Number(payload.unit_value ?? 0);
