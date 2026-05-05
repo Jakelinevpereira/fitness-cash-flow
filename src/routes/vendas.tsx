@@ -13,6 +13,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Plus, Pencil, Trash2, FileDown, FileUp, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { formatBRL, formatDate } from "@/lib/format";
+import { DateBRInput } from "@/components/DateBRInput";
 import type { Tables } from "@/integrations/supabase/types";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
