@@ -4,7 +4,7 @@ import { AppLayout } from "@/components/AppLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp, TrendingDown, Wallet, ShoppingCart, PiggyBank, Package } from "lucide-react";
-import { formatBRL } from "@/lib/format";
+import { formatBRL, formatMonth } from "@/lib/format";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend, CartesianGrid } from "recharts";
 
 export const Route = createFileRoute("/")({
@@ -96,7 +96,7 @@ function Dashboard() {
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={barData}>
                     <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                    <XAxis dataKey="mes" stroke="var(--muted-foreground)" fontSize={12} />
+                    <XAxis dataKey="mes" stroke="var(--muted-foreground)" fontSize={12} tickFormatter={formatMonth} />
                     <YAxis stroke="var(--muted-foreground)" fontSize={12} />
                     <Tooltip contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 8 }} formatter={(v: number) => formatBRL(v)} />
                     <Legend />
