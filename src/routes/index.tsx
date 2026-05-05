@@ -71,12 +71,43 @@ function Dashboard() {
           <p className="text-muted-foreground text-sm mt-1">Visão geral da sua loja fitness</p>
         </div>
 
-        <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
-          <StatCard title="Receitas" value={formatBRL(receitas)} icon={TrendingUp} accent="success" />
-          <StatCard title="Despesas" value={formatBRL(despesas)} icon={TrendingDown} accent="destructive" />
-          <StatCard title="Saldo em caixa" value={formatBRL(saldo)} icon={Wallet} accent="primary" />
-          <StatCard title="Total de vendas" value={String(totalVendas)} icon={ShoppingCart} accent="accent" />
+        <div className="grid gap-4 grid-cols-2 lg:grid-cols-3">
+          <StatCard title="Saldo Inicial" value={formatBRL(saldoInicial)} icon={PiggyBank} accent="accent" />
+          <StatCard title="Receitas (Vendas)" value={formatBRL(receitasVendas)} icon={TrendingUp} accent="success" />
+          <StatCard title="Despesas Operacionais" value={formatBRL(despesas)} icon={TrendingDown} accent="destructive" />
+          <StatCard title="Compras de Estoque" value={formatBRL(compras)} icon={Package} accent="accent" />
+          <StatCard title="Saldo em Caixa" value={formatBRL(saldo)} icon={Wallet} accent="primary" />
+          <StatCard title="Total de Vendas" value={String(totalVendas)} icon={ShoppingCart} accent="success" />
         </div>
+
+        <Card>
+          <CardContent className="p-5 text-sm text-muted-foreground">
+            <strong className="text-foreground">Cálculo do saldo:</strong> {formatBRL(saldoInicial)} (inicial) + {formatBRL(receitasVendas)} (vendas) − {formatBRL(despesas)} (despesas) − {formatBRL(compras)} (estoque) = <strong className="text-foreground">{formatBRL(saldo)}</strong>
+          </CardContent>
+        </Card>
+
+        <div className="grid gap-4 lg:grid-cols-2">
+          <Card>
+            <CardHeader><CardTitle>Receitas vs Saídas (mensal)</CardTitle></CardHeader>
+            <CardContent className="h-72">
+              {barData.length === 0 ? (
+                <Empty />
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={barData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                    <XAxis dataKey="mes" stroke="var(--muted-foreground)" fontSize={12} />
+                    <YAxis stroke="var(--muted-foreground)" fontSize={12} />
+                    <Tooltip contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 8 }} formatter={(v: number) => formatBRL(v)} />
+                    <Legend />
+                    <Bar dataKey="receitas" name="Receitas" fill="var(--chart-2)" radius={[6, 6, 0, 0]} />
+                    <Bar dataKey="despesas" name="Despesas" fill="var(--chart-5)" radius={[6, 6, 0, 0]} />
+                    <Bar dataKey="compras" name="Compras" fill="var(--chart-4)" radius={[6, 6, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
+            </CardContent>
+          </Card>
 
         <div className="grid gap-4 lg:grid-cols-2">
           <Card>
