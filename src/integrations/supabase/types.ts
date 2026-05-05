@@ -47,6 +47,7 @@ export type Database = {
       sales: {
         Row: {
           created_at: string
+          customer_name: string | null
           id: string
           payment_method: string | null
           product_id: string | null
@@ -58,6 +59,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          customer_name?: string | null
           id?: string
           payment_method?: string | null
           product_id?: string | null
@@ -69,6 +71,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          customer_name?: string | null
           id?: string
           payment_method?: string | null
           product_id?: string | null
