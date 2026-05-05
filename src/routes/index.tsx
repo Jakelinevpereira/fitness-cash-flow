@@ -108,29 +108,6 @@ function Dashboard() {
               )}
             </CardContent>
           </Card>
-
-        <div className="grid gap-4 lg:grid-cols-2">
-          <Card>
-            <CardHeader><CardTitle>Receitas vs Despesas (mensal)</CardTitle></CardHeader>
-            <CardContent className="h-72">
-              {barData.length === 0 ? (
-                <Empty />
-              ) : (
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={barData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                    <XAxis dataKey="mes" stroke="var(--muted-foreground)" fontSize={12} />
-                    <YAxis stroke="var(--muted-foreground)" fontSize={12} />
-                    <Tooltip contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 8 }} formatter={(v: number) => formatBRL(v)} />
-                    <Legend />
-                    <Bar dataKey="receitas" fill="var(--chart-2)" radius={[6, 6, 0, 0]} />
-                    <Bar dataKey="despesas" fill="var(--chart-5)" radius={[6, 6, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              )}
-            </CardContent>
-          </Card>
-
           <Card>
             <CardHeader><CardTitle>Despesas por categoria</CardTitle></CardHeader>
             <CardContent className="h-72">
