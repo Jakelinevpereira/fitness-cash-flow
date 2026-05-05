@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AppLayout } from "@/components/AppLayout";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,7 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Card, CardContent } from "@/components/ui/card";
 import { Plus, Pencil, Trash2, FileDown, FileUp, FileText } from "lucide-react";
 import { toast } from "sonner";
-import { formatBRL, formatDate } from "@/lib/format";
+import { formatBRL, formatDate, toISODate } from "@/lib/format";
 import { DateBRInput } from "@/components/DateBRInput";
 import type { Tables } from "@/integrations/supabase/types";
 import jsPDF from "jspdf";
@@ -156,7 +156,7 @@ function SalesPage() {
       const rows = json.map((r) => {
         const qty = Number(r.Quantidade ?? r.quantity ?? 1);
         const unit = Number(r["Preço Unitário"] ?? r.unit_price ?? 0);
-        let date = r.Data ?? r.sale_date ?? new Date().toISOString().slice(0, 10);
+        let date = r.Data ?? r.sale_date ?? toISODate(new Date());
         if (typeof date === "number") {
           const d = XLSX.SSF.parse_date_code(date);
           date = `${d.y}-${String(d.m).padStart(2,"0")}-${String(d.d).padStart(2,"0")}`;
@@ -168,7 +168,7 @@ function SalesPage() {
           unit_price: unit,
           total: qty * unit,
           payment_method: r.Pagamento ? String(r.Pagamento) : null,
-          sale_date: String(date),
+          sale_date: toISODate(String(date)) || toISODate(new Date()),
         };
       }).filter((r) => r.product_name);
       if (rows.length === 0) { toast.error("Planilha vazia"); return; }
@@ -307,8 +307,19 @@ function SaleDialog({ editing, products, onSubmit, loading }: { editing: Sale | 
     quantity: String(editing?.quantity ?? 1),
     unit_price: String(editing?.unit_price ?? 0),
     payment_method: editing?.payment_method ?? "Pix",
-    sale_date: editing?.sale_date ?? new Date().toISOString().slice(0, 10),
+    sale_date: editing?.sale_date ?? toISODate(new Date()),
   });
+  useEffect(() => {
+    setF({
+      product_id: editing?.product_id ?? "",
+      product_name: editing?.product_name ?? "",
+      customer_name: editing?.customer_name ?? "",
+      quantity: String(editing?.quantity ?? 1),
+      unit_price: String(editing?.unit_price ?? 0),
+      payment_method: editing?.payment_method ?? "Pix",
+      sale_date: editing?.sale_date ?? toISODate(new Date()),
+    });
+  }, [editing]);
   const total = (Number(f.quantity) || 0) * (Number(f.unit_price) || 0);
 
   return (
@@ -356,7 +367,7 @@ function SaleDialog({ editing, products, onSubmit, loading }: { editing: Sale | 
           quantity: Number(f.quantity),
           unit_price: Number(f.unit_price),
           payment_method: f.payment_method,
-          sale_date: f.sale_date,
+          sale_date: toISODate(f.sale_date),
         })}>Salvar</Button>
       </DialogFooter>
     </DialogContent>

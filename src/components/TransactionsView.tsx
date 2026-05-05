@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { formatBRL, formatDate } from "@/lib/format";
+import { formatBRL, formatDate, toISODate } from "@/lib/format";
 import { DateBRInput } from "@/components/DateBRInput";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -241,8 +241,19 @@ function TxDialog({ editing, onSubmit, loading }: { editing: Tx | null; onSubmit
     quantity: String(editing?.quantity ?? 1),
     unit_value: String(editing?.unit_value ?? 0),
     paid: editing?.paid ?? true,
-    transaction_date: editing?.transaction_date ?? new Date().toISOString().slice(0, 10),
+    transaction_date: editing?.transaction_date ?? toISODate(new Date()),
   });
+  useEffect(() => {
+    setForm({
+      type: editing?.type ?? "despesa",
+      category: editing?.category ?? "Compras",
+      description: editing?.description ?? "",
+      quantity: String(editing?.quantity ?? 1),
+      unit_value: String(editing?.unit_value ?? 0),
+      paid: editing?.paid ?? true,
+      transaction_date: editing?.transaction_date ?? toISODate(new Date()),
+    });
+  }, [editing]);
   const total = (Number(form.quantity) || 0) * (Number(form.unit_value) || 0);
 
   return (
@@ -270,7 +281,7 @@ function TxDialog({ editing, onSubmit, loading }: { editing: Tx | null; onSubmit
           <Field label="Total"><Input value={formatBRL(total)} disabled /></Field>
         </div>
         <div className="grid grid-cols-2 gap-3">
-          <Field label="Data"><Input type="date" value={form.transaction_date} onChange={(e) => setForm({ ...form, transaction_date: e.target.value })} /></Field>
+          <Field label="Data"><DateBRInput className="w-full" value={form.transaction_date} onChange={(iso) => setForm({ ...form, transaction_date: iso })} /></Field>
           <Field label="Pago?">
             <Select value={form.paid ? "sim" : "nao"} onValueChange={(v) => setForm({ ...form, paid: v === "sim" })}>
               <SelectTrigger><SelectValue /></SelectTrigger>
@@ -288,7 +299,7 @@ function TxDialog({ editing, onSubmit, loading }: { editing: Tx | null; onSubmit
           quantity: Number(form.quantity),
           unit_value: Number(form.unit_value),
           paid: form.paid,
-          transaction_date: form.transaction_date,
+          transaction_date: toISODate(form.transaction_date),
         })}>Salvar</Button>
       </DialogFooter>
     </DialogContent>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
+import { formatDate, toISODate } from "@/lib/format";
 
 /** Input dd/mm/aaaa que armazena/devolve ISO yyyy-mm-dd */
 export function DateBRInput({
@@ -13,15 +14,10 @@ export function DateBRInput({
   className?: string;
   placeholder?: string;
 }) {
-  const isoToBr = (iso: string) => {
-    if (!iso) return "";
-    const [y, m, d] = iso.split("-");
-    return y && m && d ? `${d}/${m}/${y}` : "";
-  };
-  const [text, setText] = useState(isoToBr(value));
+  const [text, setText] = useState(formatDate(value));
 
   useEffect(() => {
-    setText(isoToBr(value));
+    setText(formatDate(value));
   }, [value]);
 
   const handleChange = (raw: string) => {
@@ -34,7 +30,7 @@ export function DateBRInput({
       const d = digits.slice(0, 2);
       const m = digits.slice(2, 4);
       const y = digits.slice(4, 8);
-      onChange(`${y}-${m}-${d}`);
+      onChange(toISODate(`${d}/${m}/${y}`));
     } else if (digits.length === 0) {
       onChange("");
     }
