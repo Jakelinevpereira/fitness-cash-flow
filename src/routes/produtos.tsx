@@ -27,6 +27,8 @@ function ProductsPage() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Product | null>(null);
+  const [fName, setFName] = useState("");
+  const [fCategory, setFCategory] = useState("all");
 
   const { data: rows = [] } = useQuery({
     queryKey: ["products"],
