@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { AppLayout } from "@/components/AppLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TrendingUp, TrendingDown, Wallet, ShoppingCart } from "lucide-react";
+import { TrendingUp, TrendingDown, Wallet, ShoppingCart, PiggyBank, Package } from "lucide-react";
 import { formatBRL } from "@/lib/format";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend, CartesianGrid } from "recharts";
 
@@ -30,29 +30,33 @@ function Dashboard() {
     },
   });
 
-  const receitas = tx.filter((t) => t.type === "receita").reduce((s, t) => s + Number(t.total), 0)
-    + sales.reduce((s, t) => s + Number(t.total), 0);
-  const despesas = tx.filter((t) => t.type === "despesa" || t.type === "compra").reduce((s, t) => s + Number(t.total), 0);
-  const saldo = receitas - despesas;
+  const sum = (arr: { total: number | string }[]) => arr.reduce((s, t) => s + Number(t.total), 0);
+  const saldoInicial = sum(tx.filter((t) => t.type === "saldo_inicial"));
+  const receitasVendas = sum(sales) + sum(tx.filter((t) => t.type === "receita"));
+  const despesas = sum(tx.filter((t) => t.type === "despesa"));
+  const compras = sum(tx.filter((t) => t.type === "compra"));
+  const saldo = saldoInicial + receitasVendas - despesas - compras;
   const totalVendas = sales.length;
 
-  // Group by category for despesas
+  // Group by category — apenas despesas operacionais + compras
   const byCategory: Record<string, number> = {};
-  tx.filter((t) => t.type !== "receita").forEach((t) => {
-    byCategory[t.category] = (byCategory[t.category] || 0) + Number(t.total);
+  tx.filter((t) => t.type === "despesa" || t.type === "compra").forEach((t) => {
+    const key = t.type === "compra" ? `Compras: ${t.category}` : t.category;
+    byCategory[key] = (byCategory[key] || 0) + Number(t.total);
   });
   const pieData = Object.entries(byCategory).map(([name, value]) => ({ name, value }));
 
   // Monthly chart
-  const monthly: Record<string, { mes: string; receitas: number; despesas: number }> = {};
-  const addMonth = (date: string, key: "receitas" | "despesas", val: number) => {
+  const monthly: Record<string, { mes: string; receitas: number; despesas: number; compras: number }> = {};
+  const addMonth = (date: string, key: "receitas" | "despesas" | "compras", val: number) => {
     const m = date.slice(0, 7);
-    if (!monthly[m]) monthly[m] = { mes: m, receitas: 0, despesas: 0 };
+    if (!monthly[m]) monthly[m] = { mes: m, receitas: 0, despesas: 0, compras: 0 };
     monthly[m][key] += val;
   };
   tx.forEach((t) => {
     if (t.type === "receita") addMonth(t.transaction_date, "receitas", Number(t.total));
-    else addMonth(t.transaction_date, "despesas", Number(t.total));
+    else if (t.type === "despesa") addMonth(t.transaction_date, "despesas", Number(t.total));
+    else if (t.type === "compra") addMonth(t.transaction_date, "compras", Number(t.total));
   });
   sales.forEach((s) => addMonth(s.sale_date, "receitas", Number(s.total)));
   const barData = Object.values(monthly).sort((a, b) => a.mes.localeCompare(b.mes));
@@ -67,16 +71,24 @@ function Dashboard() {
           <p className="text-muted-foreground text-sm mt-1">Visão geral da sua loja fitness</p>
         </div>
 
-        <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
-          <StatCard title="Receitas" value={formatBRL(receitas)} icon={TrendingUp} accent="success" />
-          <StatCard title="Despesas" value={formatBRL(despesas)} icon={TrendingDown} accent="destructive" />
-          <StatCard title="Saldo em caixa" value={formatBRL(saldo)} icon={Wallet} accent="primary" />
-          <StatCard title="Total de vendas" value={String(totalVendas)} icon={ShoppingCart} accent="accent" />
+        <div className="grid gap-4 grid-cols-2 lg:grid-cols-3">
+          <StatCard title="Saldo Inicial" value={formatBRL(saldoInicial)} icon={PiggyBank} accent="accent" />
+          <StatCard title="Receitas (Vendas)" value={formatBRL(receitasVendas)} icon={TrendingUp} accent="success" />
+          <StatCard title="Despesas Operacionais" value={formatBRL(despesas)} icon={TrendingDown} accent="destructive" />
+          <StatCard title="Compras de Estoque" value={formatBRL(compras)} icon={Package} accent="accent" />
+          <StatCard title="Saldo em Caixa" value={formatBRL(saldo)} icon={Wallet} accent="primary" />
+          <StatCard title="Total de Vendas" value={String(totalVendas)} icon={ShoppingCart} accent="success" />
         </div>
+
+        <Card>
+          <CardContent className="p-5 text-sm text-muted-foreground">
+            <strong className="text-foreground">Cálculo do saldo:</strong> {formatBRL(saldoInicial)} (inicial) + {formatBRL(receitasVendas)} (vendas) − {formatBRL(despesas)} (despesas) − {formatBRL(compras)} (estoque) = <strong className="text-foreground">{formatBRL(saldo)}</strong>
+          </CardContent>
+        </Card>
 
         <div className="grid gap-4 lg:grid-cols-2">
           <Card>
-            <CardHeader><CardTitle>Receitas vs Despesas (mensal)</CardTitle></CardHeader>
+            <CardHeader><CardTitle>Receitas vs Saídas (mensal)</CardTitle></CardHeader>
             <CardContent className="h-72">
               {barData.length === 0 ? (
                 <Empty />
@@ -88,14 +100,14 @@ function Dashboard() {
                     <YAxis stroke="var(--muted-foreground)" fontSize={12} />
                     <Tooltip contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 8 }} formatter={(v: number) => formatBRL(v)} />
                     <Legend />
-                    <Bar dataKey="receitas" fill="var(--chart-2)" radius={[6, 6, 0, 0]} />
-                    <Bar dataKey="despesas" fill="var(--chart-5)" radius={[6, 6, 0, 0]} />
+                    <Bar dataKey="receitas" name="Receitas" fill="var(--chart-2)" radius={[6, 6, 0, 0]} />
+                    <Bar dataKey="despesas" name="Despesas" fill="var(--chart-5)" radius={[6, 6, 0, 0]} />
+                    <Bar dataKey="compras" name="Compras" fill="var(--chart-4)" radius={[6, 6, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               )}
             </CardContent>
           </Card>
-
           <Card>
             <CardHeader><CardTitle>Despesas por categoria</CardTitle></CardHeader>
             <CardContent className="h-72">
