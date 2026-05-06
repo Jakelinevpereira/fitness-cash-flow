@@ -57,25 +57,49 @@ function SalesPage() {
     queryFn: async () => (await supabase.from("products").select("*")).data ?? [],
   });
 
+  const adjustStock = async (productId: string | null | undefined, delta: number) => {
+    if (!productId || !delta) return;
+    const { data: p } = await supabase.from("products").select("stock").eq("id", productId).maybeSingle();
+    if (!p) return;
+    const newStock = Math.max(0, Number(p.stock) - delta);
+    await supabase.from("products").update({ stock: newStock }).eq("id", productId);
+  };
+
   const upsert = useMutation({
     mutationFn: async (s: Partial<Sale> & { id?: string }) => {
       const total = Number(s.quantity ?? 1) * Number(s.unit_price ?? 0);
       const body = { ...s, total };
       if (s.id) {
+        const prev = rows.find((r) => r.id === s.id);
         const { error } = await supabase.from("sales").update(body).eq("id", s.id);
         if (error) throw error;
+        // adjust stock by delta if same product; else revert old + apply new
+        if (prev) {
+          if (prev.product_id === s.product_id) {
+            await adjustStock(s.product_id ?? null, Number(s.quantity ?? 0) - Number(prev.quantity));
+          } else {
+            await adjustStock(prev.product_id, -Number(prev.quantity));
+            await adjustStock(s.product_id ?? null, Number(s.quantity ?? 0));
+          }
+        }
       } else {
         const { error } = await supabase.from("sales").insert(body as never);
         if (error) throw error;
+        await adjustStock(s.product_id ?? null, Number(s.quantity ?? 0));
       }
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["sales"] }); setOpen(false); setEditing(null); toast.success("Salvo!"); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["sales"] }); qc.invalidateQueries({ queryKey: ["products"] }); setOpen(false); setEditing(null); toast.success("Salvo!"); },
     onError: (e: Error) => toast.error(e.message),
   });
 
   const remove = useMutation({
-    mutationFn: async (id: string) => { const { error } = await supabase.from("sales").delete().eq("id", id); if (error) throw error; },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["sales"] }); toast.success("Removido"); },
+    mutationFn: async (id: string) => {
+      const prev = rows.find((r) => r.id === id);
+      const { error } = await supabase.from("sales").delete().eq("id", id);
+      if (error) throw error;
+      if (prev) await adjustStock(prev.product_id, -Number(prev.quantity));
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["sales"] }); qc.invalidateQueries({ queryKey: ["products"] }); toast.success("Removido"); },
   });
 
   const total = rows.reduce((s, r) => s + Number(r.total), 0);
@@ -336,11 +360,23 @@ function SaleDialog({ editing, products, onSubmit, loading }: { editing: Sale | 
               <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="manual">Digitar manualmente</SelectItem>
-                {products.map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
+                {products.map((p) => <SelectItem key={p.id} value={p.id}>{p.name} (estoque: {p.stock})</SelectItem>)}
               </SelectContent>
             </Select>
           ) : null}
           {!f.product_id && <Input className="mt-2" placeholder="Nome do produto" value={f.product_name} onChange={(e) => setF({ ...f, product_name: e.target.value })} />}
+          {f.product_id && (() => {
+            const p = products.find((x) => x.id === f.product_id);
+            if (!p) return null;
+            const qty = Number(f.quantity) || 0;
+            const prevQty = editing && editing.product_id === f.product_id ? Number(editing.quantity) : 0;
+            const restante = Number(p.stock) - qty + prevQty;
+            return (
+              <p className={`text-xs mt-1 ${restante < 0 ? "text-destructive" : "text-muted-foreground"}`}>
+                Estoque atual: <span className="font-medium">{p.stock}</span> · Após esta venda: <span className="font-medium">{restante}</span>
+              </p>
+            );
+          })()}
         </Fld>
         <Fld label="Cliente"><Input placeholder="Nome do comprador" value={f.customer_name} onChange={(e) => setF({ ...f, customer_name: e.target.value })} /></Fld>
         <div className="grid grid-cols-3 gap-3">
