@@ -360,11 +360,23 @@ function SaleDialog({ editing, products, onSubmit, loading }: { editing: Sale | 
               <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="manual">Digitar manualmente</SelectItem>
-                {products.map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
+                {products.map((p) => <SelectItem key={p.id} value={p.id}>{p.name} (estoque: {p.stock})</SelectItem>)}
               </SelectContent>
             </Select>
           ) : null}
           {!f.product_id && <Input className="mt-2" placeholder="Nome do produto" value={f.product_name} onChange={(e) => setF({ ...f, product_name: e.target.value })} />}
+          {f.product_id && (() => {
+            const p = products.find((x) => x.id === f.product_id);
+            if (!p) return null;
+            const qty = Number(f.quantity) || 0;
+            const prevQty = editing && editing.product_id === f.product_id ? Number(editing.quantity) : 0;
+            const restante = Number(p.stock) - qty + prevQty;
+            return (
+              <p className={`text-xs mt-1 ${restante < 0 ? "text-destructive" : "text-muted-foreground"}`}>
+                Estoque atual: <span className="font-medium">{p.stock}</span> · Após esta venda: <span className="font-medium">{restante}</span>
+              </p>
+            );
+          })()}
         </Fld>
         <Fld label="Cliente"><Input placeholder="Nome do comprador" value={f.customer_name} onChange={(e) => setF({ ...f, customer_name: e.target.value })} /></Fld>
         <div className="grid grid-cols-3 gap-3">
