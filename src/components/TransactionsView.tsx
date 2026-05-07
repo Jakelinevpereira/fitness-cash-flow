@@ -220,18 +220,18 @@ export function TransactionsView() {
             {filtered.length > 0 && (
               <tfoot className="border-t bg-muted/50 font-medium">
                 <TableRow>
-                  <TableCell colSpan={6} className="text-right font-semibold">Total receitas filtradas</TableCell>
-                  <TableCell className="text-right font-bold text-success">{formatBRL(totalReceitasTx)}</TableCell>
+                  <TableCell colSpan={6} className="text-right font-semibold">Total receitas</TableCell>
+                  <TableCell className="text-right font-bold text-foreground">{formatBRL(totalReceitasTx)}</TableCell>
                   <TableCell colSpan={2}></TableCell>
                 </TableRow>
                 <TableRow>
-                  <TableCell colSpan={6} className="text-right font-semibold">Total despesas filtradas</TableCell>
+                  <TableCell colSpan={6} className="text-right font-semibold">Total despesas</TableCell>
                   <TableCell className="text-right font-bold text-destructive">{formatBRL(totalDespesas)}</TableCell>
                   <TableCell colSpan={2}></TableCell>
                 </TableRow>
                 <TableRow>
-                  <TableCell colSpan={6} className="text-right font-semibold">Saldo do período (com saldo inicial)</TableCell>
-                  <TableCell className={`text-right font-bold ${(totalSaldoInicial + totalReceitasTx - totalDespesas) >= 0 ? "text-success" : "text-destructive"}`}>{formatBRL(totalSaldoInicial + totalReceitasTx - totalDespesas)}</TableCell>
+                  <TableCell colSpan={6} className="text-right font-semibold">Saldo do período</TableCell>
+                  <TableCell className={`text-right font-bold ${(totalSaldoInicial + totalReceitasTx - totalDespesas) >= 0 ? "text-foreground" : "text-destructive"}`}>{formatBRL(totalSaldoInicial + totalReceitasTx - totalDespesas)}</TableCell>
                   <TableCell colSpan={2}></TableCell>
                 </TableRow>
               </tfoot>
