@@ -22,7 +22,7 @@ import * as XLSX from "xlsx";
 type Sale = Tables<"sales">;
 type Product = Tables<"products">;
 
-const PAYMENTS = ["A pagar", "Dinheiro", "Pix", "Crédito", "Débito"];
+const PAYMENTS = ["A receber", "Dinheiro", "Pix", "Crédito", "Débito"];
 const MONTHS = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
 
 export const Route = createFileRoute("/vendas")({
@@ -288,15 +288,17 @@ function SalesPage() {
               <TableBody>
                 {filtered.length === 0 ? (
                   <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">Nenhuma venda</TableCell></TableRow>
-                ) : filtered.map((r) => (
+                ) : filtered.map((r) => {
+                  const pendente = r.payment_method === "A pagar" || r.payment_method === "A receber";
+                  return (
                   <TableRow key={r.id}>
                     <TableCell>{formatDate(r.sale_date)}</TableCell>
                     <TableCell className="font-medium">{r.product_name}</TableCell>
                     <TableCell>{r.customer_name ?? "-"}</TableCell>
                     <TableCell className="text-right">{r.quantity}</TableCell>
                     <TableCell className="text-right">{formatBRL(Number(r.unit_price))}</TableCell>
-                    <TableCell className="text-right font-semibold text-success">{formatBRL(Number(r.total))}</TableCell>
-                    <TableCell>{r.payment_method ?? "-"}</TableCell>
+                    <TableCell className={`text-right font-semibold ${pendente ? "text-destructive" : "text-success"}`}>{formatBRL(Number(r.total))}</TableCell>
+                    <TableCell className={pendente ? "text-destructive font-medium" : ""}>{r.payment_method === "A pagar" ? "A receber" : (r.payment_method ?? "-")}</TableCell>
                     <TableCell>
                       <div className="flex gap-1 justify-end">
                         <Button size="icon" variant="ghost" onClick={() => { setEditing(r); setOpen(true); }}><Pencil className="h-4 w-4" /></Button>
@@ -304,7 +306,8 @@ function SalesPage() {
                       </div>
                     </TableCell>
                   </TableRow>
-                ))}
+                  );
+                })}
               </TableBody>
               {filtered.length > 0 && (
                 <tfoot className="border-t bg-muted/50 font-medium">
@@ -330,7 +333,7 @@ function SaleDialog({ editing, products, onSubmit, loading }: { editing: Sale | 
     customer_name: editing?.customer_name ?? "",
     quantity: String(editing?.quantity ?? 1),
     unit_price: String(editing?.unit_price ?? 0),
-    payment_method: editing?.payment_method ?? "A pagar",
+    payment_method: editing?.payment_method ?? "A receber",
     sale_date: editing?.sale_date ?? toISODate(new Date()),
   });
   useEffect(() => {
@@ -340,7 +343,7 @@ function SaleDialog({ editing, products, onSubmit, loading }: { editing: Sale | 
       customer_name: editing?.customer_name ?? "",
       quantity: String(editing?.quantity ?? 1),
       unit_price: String(editing?.unit_price ?? 0),
-      payment_method: editing?.payment_method ?? "A pagar",
+      payment_method: editing?.payment_method ?? "A receber",
       sale_date: editing?.sale_date ?? toISODate(new Date()),
     });
   }, [editing]);
