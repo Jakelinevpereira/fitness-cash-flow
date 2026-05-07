@@ -230,8 +230,8 @@ export function TransactionsView() {
                   <TableCell colSpan={2}></TableCell>
                 </TableRow>
                 <TableRow>
-                  <TableCell colSpan={6} className="text-right font-semibold">Saldo do período</TableCell>
-                  <TableCell className={`text-right font-bold ${(totalReceitasTx - totalDespesas) >= 0 ? "text-success" : "text-destructive"}`}>{formatBRL(totalReceitasTx - totalDespesas)}</TableCell>
+                  <TableCell colSpan={6} className="text-right font-semibold">Saldo do período (com saldo inicial)</TableCell>
+                  <TableCell className={`text-right font-bold ${(totalSaldoInicial + totalReceitasTx - totalDespesas) >= 0 ? "text-success" : "text-destructive"}`}>{formatBRL(totalSaldoInicial + totalReceitasTx - totalDespesas)}</TableCell>
                   <TableCell colSpan={2}></TableCell>
                 </TableRow>
               </tfoot>
