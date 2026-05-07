@@ -330,7 +330,7 @@ function SaleDialog({ editing, products, onSubmit, loading }: { editing: Sale | 
     customer_name: editing?.customer_name ?? "",
     quantity: String(editing?.quantity ?? 1),
     unit_price: String(editing?.unit_price ?? 0),
-    payment_method: editing?.payment_method ?? "Pix",
+    payment_method: editing?.payment_method ?? "A pagar",
     sale_date: editing?.sale_date ?? toISODate(new Date()),
   });
   useEffect(() => {
@@ -340,7 +340,7 @@ function SaleDialog({ editing, products, onSubmit, loading }: { editing: Sale | 
       customer_name: editing?.customer_name ?? "",
       quantity: String(editing?.quantity ?? 1),
       unit_price: String(editing?.unit_price ?? 0),
-      payment_method: editing?.payment_method ?? "Pix",
+      payment_method: editing?.payment_method ?? "A pagar",
       sale_date: editing?.sale_date ?? toISODate(new Date()),
     });
   }, [editing]);
