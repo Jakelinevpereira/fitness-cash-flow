@@ -22,7 +22,7 @@ import * as XLSX from "xlsx";
 type Sale = Tables<"sales">;
 type Product = Tables<"products">;
 
-const PAYMENTS = ["Dinheiro", "Pix", "Crédito", "Débito"];
+const PAYMENTS = ["A pagar", "Dinheiro", "Pix", "Crédito", "Débito"];
 const MONTHS = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
 
 export const Route = createFileRoute("/vendas")({
@@ -330,7 +330,7 @@ function SaleDialog({ editing, products, onSubmit, loading }: { editing: Sale | 
     customer_name: editing?.customer_name ?? "",
     quantity: String(editing?.quantity ?? 1),
     unit_price: String(editing?.unit_price ?? 0),
-    payment_method: editing?.payment_method ?? "Pix",
+    payment_method: editing?.payment_method ?? "A pagar",
     sale_date: editing?.sale_date ?? toISODate(new Date()),
   });
   useEffect(() => {
@@ -340,7 +340,7 @@ function SaleDialog({ editing, products, onSubmit, loading }: { editing: Sale | 
       customer_name: editing?.customer_name ?? "",
       quantity: String(editing?.quantity ?? 1),
       unit_price: String(editing?.unit_price ?? 0),
-      payment_method: editing?.payment_method ?? "Pix",
+      payment_method: editing?.payment_method ?? "A pagar",
       sale_date: editing?.sale_date ?? toISODate(new Date()),
     });
   }, [editing]);
