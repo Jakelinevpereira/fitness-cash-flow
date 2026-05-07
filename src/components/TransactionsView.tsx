@@ -162,7 +162,7 @@ export function TransactionsView() {
       </Card>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground">Saldo Inicial</p><p className="text-lg font-bold text-accent-foreground">{formatBRL(totalSaldoInicial)}</p></CardContent></Card>
+        <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground">Saldo Inicial</p><p className="text-lg font-bold text-foreground">{formatBRL(totalSaldoInicial)}</p></CardContent></Card>
         <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground">Receitas</p><p className="text-lg font-bold text-success">{formatBRL(totalReceitas)}</p></CardContent></Card>
         <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground">Despesas</p><p className="text-lg font-bold text-destructive">{formatBRL(totalDespesas)}</p></CardContent></Card>
         <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground">Saldo</p><p className={`text-lg font-bold ${saldo >= 0 ? "text-success" : "text-destructive"}`}>{formatBRL(saldo)}</p></CardContent></Card>
@@ -230,8 +230,8 @@ export function TransactionsView() {
                   <TableCell colSpan={2}></TableCell>
                 </TableRow>
                 <TableRow>
-                  <TableCell colSpan={6} className="text-right font-semibold">Saldo do período</TableCell>
-                  <TableCell className={`text-right font-bold ${(totalReceitasTx - totalDespesas) >= 0 ? "text-success" : "text-destructive"}`}>{formatBRL(totalReceitasTx - totalDespesas)}</TableCell>
+                  <TableCell colSpan={6} className="text-right font-semibold">Saldo do período (com saldo inicial)</TableCell>
+                  <TableCell className={`text-right font-bold ${(totalSaldoInicial + totalReceitasTx - totalDespesas) >= 0 ? "text-success" : "text-destructive"}`}>{formatBRL(totalSaldoInicial + totalReceitasTx - totalDespesas)}</TableCell>
                   <TableCell colSpan={2}></TableCell>
                 </TableRow>
               </tfoot>
