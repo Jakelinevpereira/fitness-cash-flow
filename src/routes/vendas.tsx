@@ -22,7 +22,7 @@ import * as XLSX from "xlsx";
 type Sale = Tables<"sales">;
 type Product = Tables<"products">;
 
-const PAYMENTS = ["Dinheiro", "Pix", "Crédito", "Débito"];
+const PAYMENTS = ["A pagar", "Dinheiro", "Pix", "Crédito", "Débito"];
 const MONTHS = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
 
 export const Route = createFileRoute("/vendas")({
