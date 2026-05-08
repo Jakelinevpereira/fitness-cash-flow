@@ -94,12 +94,17 @@ export function TransactionsView() {
     if (fStatus === "pendente") return false;
     return true;
   });
-  const totalVendas = filteredSales.reduce((s, r) => s + Number(r.total), 0);
-  const totalReceitasTx = filtered.filter((r) => r.type === "receita").reduce((s, r) => s + Number(r.total), 0);
-  const totalReceitas = totalReceitasTx + totalVendas;
+  const isPending = (pm: string | null) => pm === "A receber" || pm === "A pagar";
+  const totalVendasRecebidas = filteredSales.filter((r) => !isPending(r.payment_method)).reduce((s, r) => s + Number(r.total), 0);
+  const totalAReceber = filteredSales.filter((r) => isPending(r.payment_method)).reduce((s, r) => s + Number(r.total), 0);
+  const totalReceitasTx = filtered.filter((r) => r.type === "receita" && r.paid).reduce((s, r) => s + Number(r.total), 0);
+  const totalReceitasPendentesTx = filtered.filter((r) => r.type === "receita" && !r.paid).reduce((s, r) => s + Number(r.total), 0);
+  const totalReceitasRecebidas = totalReceitasTx + totalVendasRecebidas;
+  const totalReceitasBrutas = totalReceitasRecebidas + totalAReceber + totalReceitasPendentesTx;
+  const totalContasReceber = totalAReceber + totalReceitasPendentesTx;
   const totalSaldoInicial = filtered.filter((r) => r.type === "saldo_inicial").reduce((s, r) => s + Number(r.total), 0);
   const totalDespesas = filtered.filter((r) => r.type === "despesa" || r.type === "compra").reduce((s, r) => s + Number(r.total), 0);
-  const saldo = totalSaldoInicial + totalReceitas - totalDespesas;
+  const saldo = totalSaldoInicial + totalReceitasRecebidas - totalDespesas;
   const filterCategories = Array.from(new Set(rows.map((r) => r.category))).filter(Boolean);
 
   return (
