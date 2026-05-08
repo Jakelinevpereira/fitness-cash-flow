@@ -94,12 +94,17 @@ export function TransactionsView() {
     if (fStatus === "pendente") return false;
     return true;
   });
-  const totalVendas = filteredSales.reduce((s, r) => s + Number(r.total), 0);
-  const totalReceitasTx = filtered.filter((r) => r.type === "receita").reduce((s, r) => s + Number(r.total), 0);
-  const totalReceitas = totalReceitasTx + totalVendas;
+  const isPending = (pm: string | null) => pm === "A receber" || pm === "A pagar";
+  const totalVendasRecebidas = filteredSales.filter((r) => !isPending(r.payment_method)).reduce((s, r) => s + Number(r.total), 0);
+  const totalAReceber = filteredSales.filter((r) => isPending(r.payment_method)).reduce((s, r) => s + Number(r.total), 0);
+  const totalReceitasTx = filtered.filter((r) => r.type === "receita" && r.paid).reduce((s, r) => s + Number(r.total), 0);
+  const totalReceitasPendentesTx = filtered.filter((r) => r.type === "receita" && !r.paid).reduce((s, r) => s + Number(r.total), 0);
+  const totalReceitasRecebidas = totalReceitasTx + totalVendasRecebidas;
+  const totalReceitasBrutas = totalReceitasRecebidas + totalAReceber + totalReceitasPendentesTx;
+  const totalContasReceber = totalAReceber + totalReceitasPendentesTx;
   const totalSaldoInicial = filtered.filter((r) => r.type === "saldo_inicial").reduce((s, r) => s + Number(r.total), 0);
   const totalDespesas = filtered.filter((r) => r.type === "despesa" || r.type === "compra").reduce((s, r) => s + Number(r.total), 0);
-  const saldo = totalSaldoInicial + totalReceitas - totalDespesas;
+  const saldo = totalSaldoInicial + totalReceitasRecebidas - totalDespesas;
   const filterCategories = Array.from(new Set(rows.map((r) => r.category))).filter(Boolean);
 
   return (
@@ -161,9 +166,11 @@ export function TransactionsView() {
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground">Saldo Inicial</p><p className="text-lg font-bold text-foreground">{formatBRL(totalSaldoInicial)}</p></CardContent></Card>
-        <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground">Receitas</p><p className="text-lg font-bold text-success">{formatBRL(totalReceitas)}</p></CardContent></Card>
+        <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground">Receita Bruta</p><p className="text-lg font-bold text-foreground">{formatBRL(totalReceitasBrutas)}</p></CardContent></Card>
+        <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground">Receita Recebida</p><p className="text-lg font-bold text-success">{formatBRL(totalReceitasRecebidas)}</p></CardContent></Card>
+        <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground">Contas a Receber</p><p className={`text-lg font-bold ${totalContasReceber > 0 ? "text-destructive" : "text-foreground"}`}>{formatBRL(totalContasReceber)}</p></CardContent></Card>
         <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground">Despesas</p><p className="text-lg font-bold text-destructive">{formatBRL(totalDespesas)}</p></CardContent></Card>
         <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground">Saldo</p><p className={`text-lg font-bold ${saldo >= 0 ? "text-success" : "text-destructive"}`}>{formatBRL(saldo)}</p></CardContent></Card>
       </div>
@@ -220,8 +227,13 @@ export function TransactionsView() {
             {filtered.length > 0 && (
               <tfoot className="border-t bg-muted/50 font-medium">
                 <TableRow>
-                  <TableCell colSpan={6} className="text-right font-semibold">Total receitas</TableCell>
-                  <TableCell className="text-right font-bold text-foreground">{formatBRL(totalReceitas)}</TableCell>
+                  <TableCell colSpan={6} className="text-right font-semibold">Receita recebida</TableCell>
+                  <TableCell className="text-right font-bold text-success">{formatBRL(totalReceitasRecebidas)}</TableCell>
+                  <TableCell colSpan={2}></TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell colSpan={6} className="text-right font-semibold">Contas a receber</TableCell>
+                  <TableCell className={`text-right font-bold ${totalContasReceber > 0 ? "text-destructive" : "text-foreground"}`}>{formatBRL(totalContasReceber)}</TableCell>
                   <TableCell colSpan={2}></TableCell>
                 </TableRow>
                 <TableRow>
