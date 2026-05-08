@@ -227,8 +227,13 @@ export function TransactionsView() {
             {filtered.length > 0 && (
               <tfoot className="border-t bg-muted/50 font-medium">
                 <TableRow>
-                  <TableCell colSpan={6} className="text-right font-semibold">Total receitas</TableCell>
-                  <TableCell className="text-right font-bold text-foreground">{formatBRL(totalReceitas)}</TableCell>
+                  <TableCell colSpan={6} className="text-right font-semibold">Receita recebida</TableCell>
+                  <TableCell className="text-right font-bold text-success">{formatBRL(totalReceitasRecebidas)}</TableCell>
+                  <TableCell colSpan={2}></TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell colSpan={6} className="text-right font-semibold">Contas a receber</TableCell>
+                  <TableCell className={`text-right font-bold ${totalContasReceber > 0 ? "text-destructive" : "text-foreground"}`}>{formatBRL(totalContasReceber)}</TableCell>
                   <TableCell colSpan={2}></TableCell>
                 </TableRow>
                 <TableRow>
