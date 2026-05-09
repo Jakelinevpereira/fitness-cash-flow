@@ -354,20 +354,19 @@ function SaleDialog({ editing, products, onSubmit, loading }: { editing: Sale | 
       <DialogHeader><DialogTitle>{editing ? "Editar" : "Nova"} venda</DialogTitle></DialogHeader>
       <div className="grid gap-3 py-2">
         <Fld label="Produto">
-          {products.length > 0 ? (
-            <Select value={f.product_id || "manual"} onValueChange={(v) => {
-              if (v === "manual") { setF({ ...f, product_id: "", product_name: "" }); return; }
+          {products.length === 0 ? (
+            <p className="text-xs text-destructive">Cadastre produtos no estoque antes de registrar vendas.</p>
+          ) : (
+            <Select value={f.product_id} onValueChange={(v) => {
               const p = products.find((x) => x.id === v);
               if (p) setF({ ...f, product_id: p.id, product_name: p.name, unit_price: String(p.sale_price) });
             }}>
-              <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+              <SelectTrigger><SelectValue placeholder="Selecione um produto do estoque" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="manual">Digitar manualmente</SelectItem>
-                {products.map((p) => <SelectItem key={p.id} value={p.id}>{p.name} (estoque: {p.stock})</SelectItem>)}
+                {products.map((p) => <SelectItem key={p.id} value={p.id} disabled={p.stock <= 0 && editing?.product_id !== p.id}>{p.name} (estoque: {p.stock})</SelectItem>)}
               </SelectContent>
             </Select>
-          ) : null}
-          {!f.product_id && <Input className="mt-2" placeholder="Nome do produto" value={f.product_name} onChange={(e) => setF({ ...f, product_name: e.target.value })} />}
+          )}
           {f.product_id && (() => {
             const p = products.find((x) => x.id === f.product_id);
             if (!p) return null;
