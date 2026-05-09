@@ -110,15 +110,19 @@ function ProductsPage() {
                   <TableHead className="text-right">Custo</TableHead>
                   <TableHead className="text-right">Venda</TableHead>
                   <TableHead className="text-right">Margem</TableHead>
+                  <TableHead className="text-right">Est. Inicial</TableHead>
+                  <TableHead className="text-right">Vendidos</TableHead>
                   <TableHead className="text-right">Estoque</TableHead>
                   <TableHead className="w-24"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filtered.length === 0 ? (
-                  <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Nenhum produto</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={9} className="text-center py-8 text-muted-foreground">Nenhum produto</TableCell></TableRow>
                 ) : filtered.map((p) => {
                   const margin = Number(p.sale_price) - Number(p.cost_price);
+                  const initial = Number((p as Product & { initial_stock?: number }).initial_stock ?? p.stock);
+                  const sold = Math.max(0, initial - Number(p.stock));
                   return (
                     <TableRow key={p.id}>
                       <TableCell className="font-medium">{p.name}</TableCell>
@@ -126,6 +130,8 @@ function ProductsPage() {
                       <TableCell className="text-right">{formatBRL(Number(p.cost_price))}</TableCell>
                       <TableCell className="text-right">{formatBRL(Number(p.sale_price))}</TableCell>
                       <TableCell className="text-right text-success font-medium">{formatBRL(margin)}</TableCell>
+                      <TableCell className="text-right text-muted-foreground">{initial}</TableCell>
+                      <TableCell className="text-right">{sold > 0 ? <Badge variant="secondary">{sold}</Badge> : <span className="text-muted-foreground">0</span>}</TableCell>
                       <TableCell className="text-right"><Badge variant={p.stock > 0 ? "secondary" : "outline"}>{p.stock}</Badge></TableCell>
                       <TableCell>
                         <div className="flex gap-1 justify-end">
@@ -143,7 +149,7 @@ function ProductsPage() {
                     <TableCell colSpan={2} className="text-right font-semibold">Totais (estoque)</TableCell>
                     <TableCell className="text-right">{formatBRL(totalCostValue)}</TableCell>
                     <TableCell className="text-right text-success font-bold">{formatBRL(totalStockValue)}</TableCell>
-                    <TableCell colSpan={3}></TableCell>
+                    <TableCell colSpan={5}></TableCell>
                   </TableRow>
                 </tfoot>
               )}
@@ -162,6 +168,7 @@ function ProductDialog({ editing, onSubmit, loading }: { editing: Product | null
     cost_price: String(editing?.cost_price ?? 0),
     sale_price: String(editing?.sale_price ?? 0),
     stock: String(editing?.stock ?? 0),
+    initial_stock: String((editing as (Product & { initial_stock?: number }) | null)?.initial_stock ?? editing?.stock ?? 0),
   });
   return (
     <DialogContent>
@@ -169,14 +176,20 @@ function ProductDialog({ editing, onSubmit, loading }: { editing: Product | null
       <div className="grid gap-3 py-2">
         <Fld label="Nome"><Input value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} /></Fld>
         <Fld label="Categoria"><Input value={f.category} onChange={(e) => setF({ ...f, category: e.target.value })} placeholder="Ex: Roupas fitness" /></Fld>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 gap-3">
           <Fld label="Custo"><Input type="number" step="0.01" value={f.cost_price} onChange={(e) => setF({ ...f, cost_price: e.target.value })} /></Fld>
           <Fld label="Venda"><Input type="number" step="0.01" value={f.sale_price} onChange={(e) => setF({ ...f, sale_price: e.target.value })} /></Fld>
-          <Fld label="Estoque"><Input type="number" value={f.stock} onChange={(e) => setF({ ...f, stock: e.target.value })} /></Fld>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <Fld label="Estoque inicial"><Input type="number" value={f.initial_stock} onChange={(e) => {
+            const v = e.target.value;
+            setF((prev) => editing ? { ...prev, initial_stock: v } : { ...prev, initial_stock: v, stock: v });
+          }} /></Fld>
+          <Fld label="Estoque atual"><Input type="number" value={f.stock} onChange={(e) => setF({ ...f, stock: e.target.value })} /></Fld>
         </div>
       </div>
       <DialogFooter>
-        <Button disabled={loading || !f.name} onClick={() => onSubmit({ id: editing?.id, name: f.name, category: f.category || null, cost_price: Number(f.cost_price), sale_price: Number(f.sale_price), stock: Number(f.stock) })}>Salvar</Button>
+        <Button disabled={loading || !f.name} onClick={() => onSubmit({ id: editing?.id, name: f.name, category: f.category || null, cost_price: Number(f.cost_price), sale_price: Number(f.sale_price), stock: Number(f.stock), initial_stock: Number(f.initial_stock) } as Partial<Product> & { id?: string; initial_stock: number })}>Salvar</Button>
       </DialogFooter>
     </DialogContent>
   );
