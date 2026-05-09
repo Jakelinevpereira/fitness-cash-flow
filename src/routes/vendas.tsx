@@ -173,10 +173,21 @@ function SalesPage() {
 
   const importXLSX = async (file: File) => {
     try {
+      const MAX_FILE_BYTES = 5 * 1024 * 1024;
+      const MAX_ROWS = 5000;
+      const MAX_TEXT = 255;
+      const MAX_PAYMENT = 50;
+      if (file.size > MAX_FILE_BYTES) { toast.error("Arquivo muito grande (máx 5 MB)"); return; }
       const buf = await file.arrayBuffer();
       const wb = XLSX.read(buf);
       const ws = wb.Sheets[wb.SheetNames[0]];
       const json = XLSX.utils.sheet_to_json<Record<string, unknown>>(ws);
+      if (json.length > MAX_ROWS) { toast.error(`Planilha excede ${MAX_ROWS} linhas`); return; }
+      const clip = (v: unknown, max: number) => {
+        if (v === null || v === undefined || v === "") return null;
+        const s = String(v).trim();
+        return s.length > max ? s.slice(0, max) : s;
+      };
       const rows = json.map((r) => {
         const qty = Number(r.Quantidade ?? r.quantity ?? 1);
         const unit = Number(r["Preço Unitário"] ?? r.unit_price ?? 0);
@@ -185,17 +196,22 @@ function SalesPage() {
           const d = XLSX.SSF.parse_date_code(date);
           date = `${d.y}-${String(d.m).padStart(2,"0")}-${String(d.d).padStart(2,"0")}`;
         }
+        const product_name = clip(r.Produto ?? r.product_name ?? "", MAX_TEXT);
         return {
-          product_name: String(r.Produto ?? r.product_name ?? ""),
-          customer_name: r.Cliente ? String(r.Cliente) : null,
+          product_name: product_name ?? "",
+          customer_name: clip(r.Cliente, MAX_TEXT),
           quantity: qty,
           unit_price: unit,
           total: qty * unit,
-          payment_method: r.Pagamento ? String(r.Pagamento) : null,
+          payment_method: clip(r.Pagamento, MAX_PAYMENT),
           sale_date: toISODate(String(date)) || toISODate(new Date()),
         };
-      }).filter((r) => r.product_name);
-      if (rows.length === 0) { toast.error("Planilha vazia"); return; }
+      }).filter((r) =>
+        r.product_name &&
+        Number.isFinite(r.quantity) && r.quantity > 0 &&
+        Number.isFinite(r.unit_price) && r.unit_price >= 0
+      );
+      if (rows.length === 0) { toast.error("Planilha vazia ou sem linhas válidas"); return; }
       const { error } = await supabase.from("sales").insert(rows as never);
       if (error) throw error;
       qc.invalidateQueries({ queryKey: ["sales"] });
