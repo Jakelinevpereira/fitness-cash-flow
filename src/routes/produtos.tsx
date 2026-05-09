@@ -168,6 +168,7 @@ function ProductDialog({ editing, onSubmit, loading }: { editing: Product | null
     cost_price: String(editing?.cost_price ?? 0),
     sale_price: String(editing?.sale_price ?? 0),
     stock: String(editing?.stock ?? 0),
+    initial_stock: String((editing as (Product & { initial_stock?: number }) | null)?.initial_stock ?? editing?.stock ?? 0),
   });
   return (
     <DialogContent>
@@ -175,14 +176,20 @@ function ProductDialog({ editing, onSubmit, loading }: { editing: Product | null
       <div className="grid gap-3 py-2">
         <Fld label="Nome"><Input value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} /></Fld>
         <Fld label="Categoria"><Input value={f.category} onChange={(e) => setF({ ...f, category: e.target.value })} placeholder="Ex: Roupas fitness" /></Fld>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 gap-3">
           <Fld label="Custo"><Input type="number" step="0.01" value={f.cost_price} onChange={(e) => setF({ ...f, cost_price: e.target.value })} /></Fld>
           <Fld label="Venda"><Input type="number" step="0.01" value={f.sale_price} onChange={(e) => setF({ ...f, sale_price: e.target.value })} /></Fld>
-          <Fld label="Estoque"><Input type="number" value={f.stock} onChange={(e) => setF({ ...f, stock: e.target.value })} /></Fld>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <Fld label="Estoque inicial"><Input type="number" value={f.initial_stock} onChange={(e) => {
+            const v = e.target.value;
+            setF((prev) => editing ? { ...prev, initial_stock: v } : { ...prev, initial_stock: v, stock: v });
+          }} /></Fld>
+          <Fld label="Estoque atual"><Input type="number" value={f.stock} onChange={(e) => setF({ ...f, stock: e.target.value })} /></Fld>
         </div>
       </div>
       <DialogFooter>
-        <Button disabled={loading || !f.name} onClick={() => onSubmit({ id: editing?.id, name: f.name, category: f.category || null, cost_price: Number(f.cost_price), sale_price: Number(f.sale_price), stock: Number(f.stock) })}>Salvar</Button>
+        <Button disabled={loading || !f.name} onClick={() => onSubmit({ id: editing?.id, name: f.name, category: f.category || null, cost_price: Number(f.cost_price), sale_price: Number(f.sale_price), stock: Number(f.stock), initial_stock: Number(f.initial_stock) } as Partial<Product> & { id?: string; initial_stock: number })}>Salvar</Button>
       </DialogFooter>
     </DialogContent>
   );
