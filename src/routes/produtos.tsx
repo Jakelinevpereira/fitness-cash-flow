@@ -110,15 +110,19 @@ function ProductsPage() {
                   <TableHead className="text-right">Custo</TableHead>
                   <TableHead className="text-right">Venda</TableHead>
                   <TableHead className="text-right">Margem</TableHead>
+                  <TableHead className="text-right">Est. Inicial</TableHead>
+                  <TableHead className="text-right">Vendidos</TableHead>
                   <TableHead className="text-right">Estoque</TableHead>
                   <TableHead className="w-24"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filtered.length === 0 ? (
-                  <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Nenhum produto</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={9} className="text-center py-8 text-muted-foreground">Nenhum produto</TableCell></TableRow>
                 ) : filtered.map((p) => {
                   const margin = Number(p.sale_price) - Number(p.cost_price);
+                  const initial = Number((p as Product & { initial_stock?: number }).initial_stock ?? p.stock);
+                  const sold = Math.max(0, initial - Number(p.stock));
                   return (
                     <TableRow key={p.id}>
                       <TableCell className="font-medium">{p.name}</TableCell>
@@ -126,6 +130,8 @@ function ProductsPage() {
                       <TableCell className="text-right">{formatBRL(Number(p.cost_price))}</TableCell>
                       <TableCell className="text-right">{formatBRL(Number(p.sale_price))}</TableCell>
                       <TableCell className="text-right text-success font-medium">{formatBRL(margin)}</TableCell>
+                      <TableCell className="text-right text-muted-foreground">{initial}</TableCell>
+                      <TableCell className="text-right">{sold > 0 ? <Badge variant="secondary">{sold}</Badge> : <span className="text-muted-foreground">0</span>}</TableCell>
                       <TableCell className="text-right"><Badge variant={p.stock > 0 ? "secondary" : "outline"}>{p.stock}</Badge></TableCell>
                       <TableCell>
                         <div className="flex gap-1 justify-end">
