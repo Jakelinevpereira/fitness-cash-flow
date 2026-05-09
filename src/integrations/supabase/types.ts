@@ -20,6 +20,7 @@ export type Database = {
           cost_price: number
           created_at: string
           id: string
+          initial_stock: number
           name: string
           sale_price: number
           stock: number
@@ -30,6 +31,7 @@ export type Database = {
           cost_price?: number
           created_at?: string
           id?: string
+          initial_stock?: number
           name: string
           sale_price?: number
           stock?: number
@@ -40,6 +42,7 @@ export type Database = {
           cost_price?: number
           created_at?: string
           id?: string
+          initial_stock?: number
           name?: string
           sale_price?: number
           stock?: number
