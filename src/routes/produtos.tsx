@@ -149,7 +149,7 @@ function ProductsPage() {
                     <TableCell colSpan={2} className="text-right font-semibold">Totais (estoque)</TableCell>
                     <TableCell className="text-right">{formatBRL(totalCostValue)}</TableCell>
                     <TableCell className="text-right text-success font-bold">{formatBRL(totalStockValue)}</TableCell>
-                    <TableCell colSpan={3}></TableCell>
+                    <TableCell colSpan={5}></TableCell>
                   </TableRow>
                 </tfoot>
               )}
