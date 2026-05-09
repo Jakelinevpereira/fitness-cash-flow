@@ -397,16 +397,24 @@ function SaleDialog({ editing, products, onSubmit, loading }: { editing: Sale | 
         </div>
       </div>
       <DialogFooter>
-        <Button disabled={loading || !f.product_name} onClick={() => onSubmit({
-          id: editing?.id,
-          product_id: f.product_id || null,
-          product_name: f.product_name,
-          customer_name: f.customer_name || null,
-          quantity: Number(f.quantity),
-          unit_price: Number(f.unit_price),
-          payment_method: f.payment_method,
-          sale_date: toISODate(f.sale_date),
-        })}>Salvar</Button>
+        {(() => {
+          const p = products.find((x) => x.id === f.product_id);
+          const qty = Number(f.quantity) || 0;
+          const prevQty = editing && editing.product_id === f.product_id ? Number(editing.quantity) : 0;
+          const semEstoque = !!p && (Number(p.stock) - qty + prevQty < 0);
+          return (
+            <Button disabled={loading || !f.product_id || qty <= 0 || semEstoque} onClick={() => onSubmit({
+              id: editing?.id,
+              product_id: f.product_id,
+              product_name: f.product_name,
+              customer_name: f.customer_name || null,
+              quantity: qty,
+              unit_price: Number(f.unit_price),
+              payment_method: f.payment_method,
+              sale_date: toISODate(f.sale_date),
+            })}>{semEstoque ? "Estoque insuficiente" : "Salvar"}</Button>
+          );
+        })()}
       </DialogFooter>
     </DialogContent>
   );
