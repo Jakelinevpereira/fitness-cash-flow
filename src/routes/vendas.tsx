@@ -231,7 +231,7 @@ function SalesPage() {
           </div>
           <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) setEditing(null); }}>
             <DialogTrigger asChild><Button><Plus className="h-4 w-4 mr-2" />Nova venda</Button></DialogTrigger>
-            <SaleDialog editing={editing} products={products} onSubmit={(d) => upsert.mutate(d)} loading={upsert.isPending} />
+            <SaleDialog key={editing?.id ?? "new"} editing={editing} products={products} onSubmit={(d) => upsert.mutate(d)} loading={upsert.isPending} />
           </Dialog>
         </div>
 
