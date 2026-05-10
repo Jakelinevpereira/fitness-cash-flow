@@ -107,7 +107,8 @@ function ProductsPage() {
                 <TableRow>
                   <TableHead>Produto</TableHead>
                   <TableHead>Categoria</TableHead>
-                  <TableHead className="text-right">Custo</TableHead>
+                  <TableHead className="text-right">Valor Unitário</TableHead>
+                  <TableHead className="text-right">Valor Total</TableHead>
                   <TableHead className="text-right">Venda</TableHead>
                   <TableHead className="text-right">Margem</TableHead>
                   <TableHead className="text-right">Est. Inicial</TableHead>
