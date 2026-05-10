@@ -107,7 +107,8 @@ function ProductsPage() {
                 <TableRow>
                   <TableHead>Produto</TableHead>
                   <TableHead>Categoria</TableHead>
-                  <TableHead className="text-right">Custo</TableHead>
+                  <TableHead className="text-right">Valor Unitário</TableHead>
+                  <TableHead className="text-right">Valor Total</TableHead>
                   <TableHead className="text-right">Venda</TableHead>
                   <TableHead className="text-right">Margem</TableHead>
                   <TableHead className="text-right">Est. Inicial</TableHead>
@@ -118,16 +119,18 @@ function ProductsPage() {
               </TableHeader>
               <TableBody>
                 {filtered.length === 0 ? (
-                  <TableRow><TableCell colSpan={9} className="text-center py-8 text-muted-foreground">Nenhum produto</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={10} className="text-center py-8 text-muted-foreground">Nenhum produto</TableCell></TableRow>
                 ) : filtered.map((p) => {
                   const margin = Number(p.sale_price) - Number(p.cost_price);
                   const initial = Number((p as Product & { initial_stock?: number }).initial_stock ?? p.stock);
                   const sold = Math.max(0, initial - Number(p.stock));
+                  const totalCost = Number(p.cost_price) * Number(p.stock);
                   return (
                     <TableRow key={p.id}>
                       <TableCell className="font-medium">{p.name}</TableCell>
                       <TableCell>{p.category ?? "-"}</TableCell>
                       <TableCell className="text-right">{formatBRL(Number(p.cost_price))}</TableCell>
+                      <TableCell className="text-right font-medium">{formatBRL(totalCost)}</TableCell>
                       <TableCell className="text-right">{formatBRL(Number(p.sale_price))}</TableCell>
                       <TableCell className="text-right text-success font-medium">{formatBRL(margin)}</TableCell>
                       <TableCell className="text-right text-muted-foreground">{initial}</TableCell>
@@ -147,6 +150,7 @@ function ProductsPage() {
                 <tfoot className="border-t bg-muted/50 font-medium">
                   <TableRow>
                     <TableCell colSpan={2} className="text-right font-semibold">Totais (estoque)</TableCell>
+                    <TableCell></TableCell>
                     <TableCell className="text-right">{formatBRL(totalCostValue)}</TableCell>
                     <TableCell className="text-right text-success font-bold">{formatBRL(totalStockValue)}</TableCell>
                     <TableCell colSpan={5}></TableCell>
