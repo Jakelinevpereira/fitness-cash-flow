@@ -77,7 +77,7 @@ function ProductsPage() {
           </div>
           <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) setEditing(null); }}>
             <DialogTrigger asChild><Button><Plus className="h-4 w-4 mr-2" />Novo produto</Button></DialogTrigger>
-            <ProductDialog editing={editing} onSubmit={(d) => upsert.mutate(d)} loading={upsert.isPending} />
+            <ProductDialog key={editing?.id ?? "new"} editing={editing} onSubmit={(d) => upsert.mutate(d)} loading={upsert.isPending} />
           </Dialog>
         </div>
 
