@@ -79,7 +79,9 @@ function Dashboard() {
 
         <div className="grid gap-4 grid-cols-2 lg:grid-cols-3">
           <StatCard title="Saldo Inicial" value={formatBRL(saldoInicial)} icon={PiggyBank} accent="accent" />
-          <StatCard title="Receitas (Vendas)" value={formatBRL(receitasVendas)} icon={TrendingUp} accent="success" />
+          <StatCard title="Vendas Totais (Faturamento)" value={formatBRL(vendasTotais)} icon={ShoppingCart} accent="primary" />
+          <StatCard title="Recebido" value={formatBRL(recebido)} icon={TrendingUp} accent="success" />
+          <StatCard title="A Receber" value={formatBRL(aReceber)} icon={TrendingUp} accent="accent" />
           <StatCard title="Despesas Operacionais" value={formatBRL(despesas)} icon={TrendingDown} accent="destructive" />
           <StatCard title="Compras de Estoque" value={formatBRL(compras)} icon={Package} accent="accent" />
           <StatCard title="Saldo em Caixa" value={formatBRL(saldo)} icon={Wallet} accent="primary" />
@@ -88,7 +90,7 @@ function Dashboard() {
 
         <Card>
           <CardContent className="p-5 text-sm text-muted-foreground">
-            <strong className="text-foreground">Cálculo do saldo:</strong> {formatBRL(saldoInicial)} (inicial) + {formatBRL(receitasVendas)} (vendas) − {formatBRL(despesas)} (despesas) − {formatBRL(compras)} (estoque) = <strong className="text-foreground">{formatBRL(saldo)}</strong>
+            <strong className="text-foreground">Cálculo do saldo (apenas recebido):</strong> {formatBRL(saldoInicial)} (inicial) + {formatBRL(recebido)} (recebido){receitasExtras > 0 ? ` + ${formatBRL(receitasExtras)} (outras receitas)` : ""} − {formatBRL(despesas)} (despesas) − {formatBRL(compras)} (estoque) = <strong className="text-foreground">{formatBRL(saldo)}</strong>. <span className="font-medium">A receber: {formatBRL(aReceber)}</span> não entra no caixa até ser pago.
           </CardContent>
         </Card>
 
