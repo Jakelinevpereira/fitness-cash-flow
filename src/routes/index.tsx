@@ -31,11 +31,17 @@ function Dashboard() {
   });
 
   const sum = (arr: { total: number | string }[]) => arr.reduce((s, t) => s + Number(t.total), 0);
+  const isPendingSale = (s: { payment_method?: string | null }) => s.payment_method === "A receber" || s.payment_method === "A pagar";
+  const vendasPagas = sales.filter((s) => !isPendingSale(s));
+  const vendasPendentes = sales.filter(isPendingSale);
   const saldoInicial = sum(tx.filter((t) => t.type === "saldo_inicial"));
-  const receitasVendas = sum(sales) + sum(tx.filter((t) => t.type === "receita"));
+  const vendasTotais = sum(sales);
+  const recebido = sum(vendasPagas);
+  const aReceber = sum(vendasPendentes);
+  const receitasExtras = sum(tx.filter((t) => t.type === "receita"));
   const despesas = sum(tx.filter((t) => t.type === "despesa"));
   const compras = sum(tx.filter((t) => t.type === "compra"));
-  const saldo = saldoInicial + receitasVendas - despesas - compras;
+  const saldo = saldoInicial + recebido + receitasExtras - despesas - compras;
   const totalVendas = sales.length;
 
   // Group by category — apenas despesas operacionais + compras
