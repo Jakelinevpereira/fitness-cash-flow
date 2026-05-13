@@ -424,9 +424,9 @@ function SaleDialog({ editing, products, onSubmit, loading }: { editing: Sale | 
           const prevQty = editing && editing.product_id === f.product_id ? Number(editing.quantity) : 0;
           const semEstoque = !!p && (Number(p.stock) - qty + prevQty < 0);
           return (
-            <Button disabled={loading || !f.product_id || qty <= 0 || semEstoque} onClick={() => onSubmit({
+            <Button disabled={loading || (!f.product_id && !f.product_name) || qty <= 0 || semEstoque} onClick={() => onSubmit({
               id: editing?.id,
-              product_id: f.product_id,
+              product_id: f.product_id || null,
               product_name: f.product_name,
               customer_name: f.customer_name || null,
               quantity: qty,
