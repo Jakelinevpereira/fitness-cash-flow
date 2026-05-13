@@ -407,7 +407,12 @@ function SaleDialog({ editing, products, onSubmit, loading }: { editing: Sale | 
           <Fld label="Pagamento">
             <Select value={f.payment_method} onValueChange={(v) => setF({ ...f, payment_method: v })}>
               <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>{PAYMENTS.map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
+              <SelectContent>
+                {PAYMENTS.map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+                {f.payment_method && !PAYMENTS.includes(f.payment_method) && (
+                  <SelectItem value={f.payment_method}>{f.payment_method} (atual)</SelectItem>
+                )}
+              </SelectContent>
             </Select>
           </Fld>
         </div>
