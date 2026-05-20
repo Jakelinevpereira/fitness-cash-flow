@@ -43,6 +43,7 @@ function Dashboard() {
   const compras = sum(tx.filter((t) => t.type === "compra"));
   const saldo = saldoInicial + recebido + receitasExtras - despesas - compras;
   const totalVendas = sales.length;
+  const totalPecas = sales.reduce((s, r) => s + Number(r.quantity ?? 0), 0);
 
   // Group by category — apenas despesas operacionais + compras
   const byCategory: Record<string, number> = {};
@@ -86,6 +87,7 @@ function Dashboard() {
           <StatCard title="Compras de Estoque" value={formatBRL(compras)} icon={Package} accent="accent" />
           <StatCard title="Saldo em Caixa" value={formatBRL(saldo)} icon={Wallet} accent="primary" />
           <StatCard title="Total de Vendas" value={String(totalVendas)} icon={ShoppingCart} accent="success" />
+          <StatCard title="Peças Vendidas" value={String(totalPecas)} icon={Package} accent="primary" />
         </div>
 
         <Card>
