@@ -87,6 +87,7 @@ function Dashboard() {
           <StatCard title="Compras de Estoque" value={formatBRL(compras)} icon={Package} accent="accent" />
           <StatCard title="Saldo em Caixa" value={formatBRL(saldo)} icon={Wallet} accent="primary" />
           <StatCard title="Total de Vendas" value={String(totalVendas)} icon={ShoppingCart} accent="success" />
+          <StatCard title="Peças Vendidas" value={String(totalPecas)} icon={Package} accent="primary" />
         </div>
 
         <Card>
