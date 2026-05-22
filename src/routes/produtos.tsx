@@ -66,6 +66,12 @@ function ProductsPage() {
   });
   const totalStockValue = filtered.reduce((s, p) => s + Number(p.sale_price) * Number(p.stock), 0);
   const totalCostValue = filtered.reduce((s, p) => s + Number(p.cost_price) * Number(p.stock), 0);
+  const totalInitialStock = filtered.reduce((s, p) => s + Number((p as Product & { initial_stock?: number }).initial_stock ?? p.stock), 0);
+  const totalSold = filtered.reduce((s, p) => {
+    const initial = Number((p as Product & { initial_stock?: number }).initial_stock ?? p.stock);
+    return s + Math.max(0, initial - Number(p.stock));
+  }, 0);
+  const totalCurrentStock = filtered.reduce((s, p) => s + Number(p.stock), 0);
 
   return (
     <AppLayout>
@@ -153,7 +159,11 @@ function ProductsPage() {
                     <TableCell></TableCell>
                     <TableCell className="text-right">{formatBRL(totalCostValue)}</TableCell>
                     <TableCell className="text-right text-success font-bold">{formatBRL(totalStockValue)}</TableCell>
-                    <TableCell colSpan={5}></TableCell>
+                    <TableCell></TableCell>
+                    <TableCell className="text-right text-muted-foreground">{totalInitialStock}</TableCell>
+                    <TableCell className="text-right">{totalSold > 0 ? <Badge variant="secondary">{totalSold}</Badge> : <span className="text-muted-foreground">0</span>}</TableCell>
+                    <TableCell className="text-right"><Badge variant={totalCurrentStock > 0 ? "secondary" : "outline"}>{totalCurrentStock}</Badge></TableCell>
+                    <TableCell></TableCell>
                   </TableRow>
                 </tfoot>
               )}
