@@ -159,7 +159,7 @@ function ProductsPage() {
                     <TableCell></TableCell>
                     <TableCell className="text-right">{formatBRL(totalCostValue)}</TableCell>
                     <TableCell className="text-right text-success font-bold">{formatBRL(totalStockValue)}</TableCell>
-                    <TableCell></TableCell>
+                    <TableCell className="text-right text-success font-bold">{formatBRL(totalStockValue - totalCostValue)}</TableCell>
                     <TableCell className="text-right text-muted-foreground">{totalInitialStock}</TableCell>
                     <TableCell className="text-right">{totalSold > 0 ? <Badge variant="secondary">{totalSold}</Badge> : <span className="text-muted-foreground">0</span>}</TableCell>
                     <TableCell className="text-right"><Badge variant={totalCurrentStock > 0 ? "secondary" : "outline"}>{totalCurrentStock}</Badge></TableCell>
