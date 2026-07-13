@@ -2,11 +2,13 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { z } from "zod";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Wallet, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -103,6 +105,7 @@ function AuthPage() {
                   <Button type="submit" className="w-full" disabled={busy}>
                     {busy && <Loader2 className="h-4 w-4 mr-2 animate-spin" />} Entrar
                   </Button>
+                  <ForgotPasswordDialog defaultEmail={email} />
                 </CardContent>
               </form>
             </TabsContent>
@@ -137,5 +140,52 @@ function AuthPage() {
         </Card>
       </div>
     </div>
+  );
+}
+
+function ForgotPasswordDialog({ defaultEmail }: { defaultEmail: string }) {
+  const [open, setOpen] = useState(false);
+  const [email, setEmail] = useState(defaultEmail);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => { setEmail(defaultEmail); }, [defaultEmail]);
+
+  async function handleReset(e: React.FormEvent) {
+    e.preventDefault();
+    const em = emailSchema.safeParse(email);
+    if (!em.success) return toast.error(em.error.issues[0].message);
+    setBusy(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(em.data, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    setBusy(false);
+    if (error) return toast.error(error.message);
+    toast.success("Enviamos um link para seu e-mail.");
+    setOpen(false);
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button type="button" variant="link" className="w-full h-auto p-0 text-sm">Esqueci minha senha</Button>
+      </DialogTrigger>
+      <DialogContent>
+        <form onSubmit={handleReset}>
+          <DialogHeader>
+            <DialogTitle>Recuperar senha</DialogTitle>
+            <DialogDescription>Informe seu e-mail para receber o link de redefinição.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-1.5 py-4">
+            <Label>E-mail</Label>
+            <Input type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+          </div>
+          <DialogFooter>
+            <Button type="submit" disabled={busy}>
+              {busy && <Loader2 className="h-4 w-4 mr-2 animate-spin" />} Enviar link
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }
