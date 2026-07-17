@@ -60,12 +60,25 @@ function ProductsPage() {
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["products"] }); toast.success("Removido"); },
   });
 
+  const reactivate = useMutation({
+    mutationFn: async ({ p, qty }: { p: Product; qty: number }) => {
+      const initial = Number((p as Product & { initial_stock?: number }).initial_stock ?? 0);
+      const { error } = await supabase.from("products").update({ stock: qty, initial_stock: initial + qty }).eq("id", p.id);
+      if (error) throw error;
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["products"] }); toast.success("Estoque reativado!"); },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const categories = Array.from(new Set(rows.map((p) => p.category).filter(Boolean))) as string[];
-  const filtered = rows.filter((p) => {
+  const matchFilters = (p: Product) => {
     if (fName && !p.name.toLowerCase().includes(fName.toLowerCase())) return false;
     if (fCategory !== "all" && (p.category ?? "") !== fCategory) return false;
     return true;
-  });
+  };
+  const activeProducts = rows.filter((p) => Number(p.stock) > 0).filter(matchFilters);
+  const zeroProducts = rows.filter((p) => Number(p.stock) <= 0).filter(matchFilters);
+  const filtered = activeProducts;
   const totalStockValue = filtered.reduce((s, p) => s + Number(p.sale_price) * Number(p.stock), 0);
   const totalCostValue = filtered.reduce((s, p) => s + Number(p.cost_price) * Number(p.stock), 0);
   const totalInitialStock = filtered.reduce((s, p) => s + Number((p as Product & { initial_stock?: number }).initial_stock ?? p.stock), 0);
@@ -74,6 +87,7 @@ function ProductsPage() {
     return s + Math.max(0, initial - Number(p.stock));
   }, 0);
   const totalCurrentStock = filtered.reduce((s, p) => s + Number(p.stock), 0);
+
 
   return (
     <AppLayout>
