@@ -95,7 +95,7 @@ function Dashboard() {
 
         <Card>
           <CardContent className="p-5 text-sm text-muted-foreground">
-            <strong className="text-foreground">Cálculo do saldo (apenas recebido):</strong> {formatBRL(saldoInicial)} (inicial) + {formatBRL(recebido)} (recebido){receitasExtras > 0 ? ` + ${formatBRL(receitasExtras)} (outras receitas)` : ""} − {formatBRL(despesasTotais)} (despesas totais: {formatBRL(despesas)} operacionais + {formatBRL(compras)} estoque) = <strong className="text-foreground">{formatBRL(saldo)}</strong>. <span className="font-medium">A receber: {formatBRL(aReceber)}</span> não entra no caixa até ser pago.
+            <strong className="text-foreground">Cálculo do saldo (apenas recebido):</strong> {formatBRL(saldoInicial)} (inicial) + {formatBRL(recebido)} (recebido){receitasExtras > 0 ? ` + ${formatBRL(receitasExtras)} (outras receitas)` : ""} − {formatBRL(despesas)} (despesas operacionais) − {formatBRL(compras)} (compras de estoque, viram produto em estoque) = <strong className="text-foreground">{formatBRL(saldo)}</strong>. <span className="font-medium">A receber: {formatBRL(aReceber)}</span> não entra no caixa até ser pago.
           </CardContent>
         </Card>
 
