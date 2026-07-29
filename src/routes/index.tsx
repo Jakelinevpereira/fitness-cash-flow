@@ -41,7 +41,9 @@ function Dashboard() {
   const receitasExtras = sum(tx.filter((t) => t.type === "receita"));
   const despesas = sum(tx.filter((t) => t.type === "despesa"));
   const compras = sum(tx.filter((t) => t.type === "compra"));
-  const saldo = saldoInicial + recebido + receitasExtras - despesas - compras;
+  const despesasTotais = despesas + compras;
+  const saldo = saldoInicial + recebido + receitasExtras - despesasTotais;
+
   const totalVendas = sales.length;
   const totalPecas = sales.reduce((s, r) => s + Number(r.quantity ?? 0), 0);
 
@@ -83,7 +85,7 @@ function Dashboard() {
           <StatCard title="Vendas Totais (Faturamento)" value={formatBRL(vendasTotais)} icon={ShoppingCart} accent="primary" />
           <StatCard title="Recebido" value={formatBRL(recebido)} icon={TrendingUp} accent="success" />
           <StatCard title="A Receber" value={formatBRL(aReceber)} icon={TrendingUp} accent="accent" />
-          <StatCard title="Despesas Operacionais" value={formatBRL(despesas)} icon={TrendingDown} accent="destructive" />
+          <StatCard title="Despesas Operacionais (total)" value={formatBRL(despesasTotais)} icon={TrendingDown} accent="destructive" />
           <StatCard title="Compras de Estoque" value={formatBRL(compras)} icon={Package} accent="accent" />
           <StatCard title="Saldo em Caixa" value={formatBRL(saldo)} icon={Wallet} accent="primary" />
           <StatCard title="Total de Vendas" value={String(totalVendas)} icon={ShoppingCart} accent="success" />
@@ -92,9 +94,10 @@ function Dashboard() {
 
         <Card>
           <CardContent className="p-5 text-sm text-muted-foreground">
-            <strong className="text-foreground">Cálculo do saldo (apenas recebido):</strong> {formatBRL(saldoInicial)} (inicial) + {formatBRL(recebido)} (recebido){receitasExtras > 0 ? ` + ${formatBRL(receitasExtras)} (outras receitas)` : ""} − {formatBRL(despesas)} (despesas) − {formatBRL(compras)} (estoque) = <strong className="text-foreground">{formatBRL(saldo)}</strong>. <span className="font-medium">A receber: {formatBRL(aReceber)}</span> não entra no caixa até ser pago.
+            <strong className="text-foreground">Cálculo do saldo (apenas recebido):</strong> {formatBRL(saldoInicial)} (inicial) + {formatBRL(recebido)} (recebido){receitasExtras > 0 ? ` + ${formatBRL(receitasExtras)} (outras receitas)` : ""} − {formatBRL(despesasTotais)} (despesas totais: {formatBRL(despesas)} operacionais + {formatBRL(compras)} estoque) = <strong className="text-foreground">{formatBRL(saldo)}</strong>. <span className="font-medium">A receber: {formatBRL(aReceber)}</span> não entra no caixa até ser pago.
           </CardContent>
         </Card>
+
 
         <div className="grid gap-4 lg:grid-cols-2">
           <Card>
