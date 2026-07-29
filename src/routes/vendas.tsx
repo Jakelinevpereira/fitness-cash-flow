@@ -294,6 +294,14 @@ function SalesPage() {
           </CardContent>
         </Card>
 
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
+          <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground">Total</p><p className="text-lg font-bold">{formatBRL(filteredTotal)}</p></CardContent></Card>
+          <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground">Recebido (dinheiro, pix, crédito, débito)</p><p className="text-lg font-bold text-success">{formatBRL(filteredRecebido)}</p></CardContent></Card>
+          <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground">A receber</p><p className="text-lg font-bold text-destructive">{formatBRL(filteredAReceber)}</p></CardContent></Card>
+        </div>
+
+
+
         <Card>
           <CardContent className="p-0 overflow-x-auto">
             <Table>
