@@ -85,8 +85,9 @@ function Dashboard() {
           <StatCard title="Vendas Totais (Faturamento)" value={formatBRL(vendasTotais)} icon={ShoppingCart} accent="primary" />
           <StatCard title="Recebido" value={formatBRL(recebido)} icon={TrendingUp} accent="success" />
           <StatCard title="A Receber" value={formatBRL(aReceber)} icon={TrendingUp} accent="accent" />
-          <StatCard title="Despesas Operacionais (total)" value={formatBRL(despesasTotais)} icon={TrendingDown} accent="destructive" />
-          <StatCard title="Compras de Estoque" value={formatBRL(compras)} icon={Package} accent="accent" />
+          <StatCard title="Despesas Operacionais" value={formatBRL(despesas)} icon={TrendingDown} accent="destructive" />
+          <StatCard title="Compras de Estoque (investimento)" value={formatBRL(compras)} icon={Package} accent="accent" />
+          <StatCard title="Saídas Totais" value={formatBRL(despesasTotais)} icon={TrendingDown} accent="accent" />
           <StatCard title="Saldo em Caixa" value={formatBRL(saldo)} icon={Wallet} accent="primary" />
           <StatCard title="Total de Vendas" value={String(totalVendas)} icon={ShoppingCart} accent="success" />
           <StatCard title="Peças Vendidas" value={String(totalPecas)} icon={Package} accent="primary" />
