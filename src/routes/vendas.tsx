@@ -104,6 +104,9 @@ function SalesPage() {
 
   const total = rows.reduce((s, r) => s + Number(r.total), 0);
 
+  const RECEIVED_METHODS = ["Recebido", "Dinheiro", "Pix", "Crédito", "Débito"];
+  const isReceived = (m?: string | null) => !!m && RECEIVED_METHODS.includes(m);
+
   const filterMonth = (sales: Sale[]) => {
     const y = Number(reportYear);
     return sales.filter((s) => {
@@ -114,13 +117,18 @@ function SalesPage() {
       if (fDateTo && s.sale_date > fDateTo) return false;
       if (fProduct && !s.product_name.toLowerCase().includes(fProduct.toLowerCase())) return false;
       if (fCustomer && !(s.customer_name ?? "").toLowerCase().includes(fCustomer.toLowerCase())) return false;
-      if (fPayment !== "all" && s.payment_method !== fPayment) return false;
+      if (fPayment === "Recebido") {
+        if (!isReceived(s.payment_method)) return false;
+      } else if (fPayment !== "all" && s.payment_method !== fPayment) return false;
       return true;
     });
   };
 
   const filtered = filterMonth(rows);
   const filteredTotal = filtered.reduce((s, r) => s + Number(r.total), 0);
+  const filteredRecebido = filtered.filter((r) => isReceived(r.payment_method)).reduce((s, r) => s + Number(r.total), 0);
+  const filteredAReceber = filteredTotal - filteredRecebido;
+
 
   const generatePDF = () => {
     const list = filtered;

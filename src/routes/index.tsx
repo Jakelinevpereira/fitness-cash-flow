@@ -41,7 +41,9 @@ function Dashboard() {
   const receitasExtras = sum(tx.filter((t) => t.type === "receita"));
   const despesas = sum(tx.filter((t) => t.type === "despesa"));
   const compras = sum(tx.filter((t) => t.type === "compra"));
-  const saldo = saldoInicial + recebido + receitasExtras - despesas - compras;
+  const despesasTotais = despesas + compras;
+  const saldo = saldoInicial + recebido + receitasExtras - despesasTotais;
+
   const totalVendas = sales.length;
   const totalPecas = sales.reduce((s, r) => s + Number(r.quantity ?? 0), 0);
 
