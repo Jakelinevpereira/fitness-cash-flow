@@ -136,16 +136,19 @@ function Dashboard() {
 
   // Produtos mais vendidos
   const topProducts = useMemo(() => {
+    const nameById = new Map(products.map((p) => [p.id, p.name]));
     const map = new Map<string, { name: string; qty: number; total: number }>();
     salesP.forEach((s) => {
-      const key = s.product_name?.trim() || "Sem nome";
-      const cur = map.get(key) ?? { name: key, qty: 0, total: 0 };
+      const label = (s.product_id ? nameById.get(s.product_id) : undefined) ?? s.product_name?.trim() ?? "Sem nome";
+      const key = label.trim().toLowerCase() || "sem nome";
+      const cur = map.get(key) ?? { name: label.trim() || "Sem nome", qty: 0, total: 0 };
       cur.qty += Number(s.quantity ?? 0);
       cur.total += Number(s.total);
       map.set(key, cur);
     });
     return [...map.values()].sort((a, b) => b.qty - a.qty).slice(0, 6);
-  }, [salesP]);
+  }, [salesP, products]);
+
 
   // Baixo giro: estoque disponível e sem venda há mais tempo
   const lowTurnover = useMemo(() => {
