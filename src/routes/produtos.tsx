@@ -253,35 +253,44 @@ function ProductsPage() {
   );
 }
 
+type ProductExtras = Product & { initial_stock?: number; size?: string | null; color?: string | null };
+
 function ProductDialog({ editing, onSubmit, loading }: { editing: Product | null; onSubmit: (d: Partial<Product> & { id?: string }) => void; loading: boolean }) {
+  const e = editing as ProductExtras | null;
   const [f, setF] = useState({
     name: editing?.name ?? "",
     category: editing?.category ?? "",
+    size: e?.size ?? "",
+    color: e?.color ?? "",
     cost_price: String(editing?.cost_price ?? 0),
     sale_price: String(editing?.sale_price ?? 0),
     stock: String(editing?.stock ?? 0),
-    initial_stock: String((editing as (Product & { initial_stock?: number }) | null)?.initial_stock ?? editing?.stock ?? 0),
+    initial_stock: String(e?.initial_stock ?? editing?.stock ?? 0),
   });
   return (
     <DialogContent>
       <DialogHeader><DialogTitle>{editing ? "Editar" : "Novo"} produto</DialogTitle></DialogHeader>
       <div className="grid gap-3 py-2">
-        <Fld label="Nome"><Input value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} /></Fld>
-        <Fld label="Categoria"><Input value={f.category} onChange={(e) => setF({ ...f, category: e.target.value })} placeholder="Ex: Roupas fitness" /></Fld>
+        <Fld label="Nome"><Input value={f.name} onChange={(ev) => setF({ ...f, name: ev.target.value })} /></Fld>
+        <Fld label="Categoria"><Input value={f.category} onChange={(ev) => setF({ ...f, category: ev.target.value })} placeholder="Ex: Roupas fitness" /></Fld>
         <div className="grid grid-cols-2 gap-3">
-          <Fld label="Custo"><Input type="number" step="0.01" value={f.cost_price} onChange={(e) => setF({ ...f, cost_price: e.target.value })} /></Fld>
-          <Fld label="Venda"><Input type="number" step="0.01" value={f.sale_price} onChange={(e) => setF({ ...f, sale_price: e.target.value })} /></Fld>
+          <Fld label="Tamanho"><Input value={f.size} onChange={(ev) => setF({ ...f, size: ev.target.value })} placeholder="Ex: P, M, G, GG" /></Fld>
+          <Fld label="Cor"><Input value={f.color} onChange={(ev) => setF({ ...f, color: ev.target.value })} placeholder="Ex: Preto" /></Fld>
         </div>
         <div className="grid grid-cols-2 gap-3">
-          <Fld label="Estoque inicial"><Input type="number" value={f.initial_stock} onChange={(e) => {
-            const v = e.target.value;
+          <Fld label="Custo"><Input type="number" step="0.01" value={f.cost_price} onChange={(ev) => setF({ ...f, cost_price: ev.target.value })} /></Fld>
+          <Fld label="Venda"><Input type="number" step="0.01" value={f.sale_price} onChange={(ev) => setF({ ...f, sale_price: ev.target.value })} /></Fld>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <Fld label="Estoque inicial"><Input type="number" value={f.initial_stock} onChange={(ev) => {
+            const v = ev.target.value;
             setF((prev) => editing ? { ...prev, initial_stock: v } : { ...prev, initial_stock: v, stock: v });
           }} /></Fld>
-          <Fld label="Estoque atual"><Input type="number" value={f.stock} onChange={(e) => setF({ ...f, stock: e.target.value })} /></Fld>
+          <Fld label="Estoque atual"><Input type="number" value={f.stock} onChange={(ev) => setF({ ...f, stock: ev.target.value })} /></Fld>
         </div>
       </div>
       <DialogFooter>
-        <Button disabled={loading || !f.name} onClick={() => onSubmit({ id: editing?.id, name: f.name, category: f.category || null, cost_price: Number(f.cost_price), sale_price: Number(f.sale_price), stock: Number(f.stock), initial_stock: Number(f.initial_stock) } as Partial<Product> & { id?: string; initial_stock: number })}>Salvar</Button>
+        <Button disabled={loading || !f.name} onClick={() => onSubmit({ id: editing?.id, name: f.name, category: f.category || null, size: f.size || null, color: f.color || null, cost_price: Number(f.cost_price), sale_price: Number(f.sale_price), stock: Number(f.stock), initial_stock: Number(f.initial_stock) } as Partial<Product> & { id?: string })}>Salvar</Button>
       </DialogFooter>
     </DialogContent>
   );
