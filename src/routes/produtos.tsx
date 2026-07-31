@@ -136,6 +136,9 @@ function ProductsPage() {
                     <TableRow>
                       <TableHead>Produto</TableHead>
                       <TableHead>Categoria</TableHead>
+                      <TableHead>Tamanho</TableHead>
+                      <TableHead>Cor</TableHead>
+
                       <TableHead className="text-right">Valor Unitário</TableHead>
                       <TableHead className="text-right">Valor Total</TableHead>
                       <TableHead className="text-right">Venda</TableHead>
