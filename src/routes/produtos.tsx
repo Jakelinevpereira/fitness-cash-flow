@@ -161,6 +161,8 @@ function ProductsPage() {
                         <TableRow key={p.id}>
                           <TableCell className="font-medium">{p.name}</TableCell>
                           <TableCell>{p.category ?? "-"}</TableCell>
+                          <TableCell>{(p as Product & { size?: string | null }).size ?? "-"}</TableCell>
+                          <TableCell>{(p as Product & { color?: string | null }).color ?? "-"}</TableCell>
                           <TableCell className="text-right">{formatBRL(Number(p.cost_price))}</TableCell>
                           <TableCell className="text-right font-medium">{formatBRL(totalCost)}</TableCell>
                           <TableCell className="text-right">{formatBRL(Number(p.sale_price))}</TableCell>
