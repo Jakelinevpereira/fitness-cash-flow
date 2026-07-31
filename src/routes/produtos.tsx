@@ -151,7 +151,7 @@ function ProductsPage() {
                   </TableHeader>
                   <TableBody>
                     {filtered.length === 0 ? (
-                      <TableRow><TableCell colSpan={10} className="text-center py-8 text-muted-foreground">Nenhum produto</TableCell></TableRow>
+                      <TableRow><TableCell colSpan={12} className="text-center py-8 text-muted-foreground">Nenhum produto</TableCell></TableRow>
                     ) : filtered.map((p) => {
                       const margin = Number(p.sale_price) - Number(p.cost_price);
                       const initial = Number((p as Product & { initial_stock?: number }).initial_stock ?? p.stock);
