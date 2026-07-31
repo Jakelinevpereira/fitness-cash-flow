@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
-import { LayoutDashboard, Package, ShoppingCart, Receipt, Wallet, LogOut, Loader2 } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingCart, Receipt, Wallet, LogOut, Loader2, Boxes } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -9,8 +9,10 @@ const nav = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
   { to: "/transacoes", label: "Transações", icon: Receipt },
   { to: "/produtos", label: "Produtos", icon: Package },
+  { to: "/estoque", label: "Estoque", icon: Boxes },
   { to: "/vendas", label: "Vendas", icon: ShoppingCart },
 ] as const;
+
 
 export function AppLayout({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
