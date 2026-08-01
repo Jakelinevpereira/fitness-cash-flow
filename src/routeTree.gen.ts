@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as VendasRouteImport } from './routes/vendas'
 import { Route as TransacoesRouteImport } from './routes/transacoes'
+import { Route as RetiradasRouteImport } from './routes/retiradas'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ProdutosRouteImport } from './routes/produtos'
 import { Route as EstoqueRouteImport } from './routes/estoque'
@@ -25,6 +26,11 @@ const VendasRoute = VendasRouteImport.update({
 const TransacoesRoute = TransacoesRouteImport.update({
   id: '/transacoes',
   path: '/transacoes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RetiradasRoute = RetiradasRouteImport.update({
+  id: '/retiradas',
+  path: '/retiradas',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -59,6 +65,7 @@ export interface FileRoutesByFullPath {
   '/estoque': typeof EstoqueRoute
   '/produtos': typeof ProdutosRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/retiradas': typeof RetiradasRoute
   '/transacoes': typeof TransacoesRoute
   '/vendas': typeof VendasRoute
 }
@@ -68,6 +75,7 @@ export interface FileRoutesByTo {
   '/estoque': typeof EstoqueRoute
   '/produtos': typeof ProdutosRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/retiradas': typeof RetiradasRoute
   '/transacoes': typeof TransacoesRoute
   '/vendas': typeof VendasRoute
 }
@@ -78,6 +86,7 @@ export interface FileRoutesById {
   '/estoque': typeof EstoqueRoute
   '/produtos': typeof ProdutosRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/retiradas': typeof RetiradasRoute
   '/transacoes': typeof TransacoesRoute
   '/vendas': typeof VendasRoute
 }
@@ -89,6 +98,7 @@ export interface FileRouteTypes {
     | '/estoque'
     | '/produtos'
     | '/reset-password'
+    | '/retiradas'
     | '/transacoes'
     | '/vendas'
   fileRoutesByTo: FileRoutesByTo
@@ -98,6 +108,7 @@ export interface FileRouteTypes {
     | '/estoque'
     | '/produtos'
     | '/reset-password'
+    | '/retiradas'
     | '/transacoes'
     | '/vendas'
   id:
@@ -107,6 +118,7 @@ export interface FileRouteTypes {
     | '/estoque'
     | '/produtos'
     | '/reset-password'
+    | '/retiradas'
     | '/transacoes'
     | '/vendas'
   fileRoutesById: FileRoutesById
@@ -117,6 +129,7 @@ export interface RootRouteChildren {
   EstoqueRoute: typeof EstoqueRoute
   ProdutosRoute: typeof ProdutosRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  RetiradasRoute: typeof RetiradasRoute
   TransacoesRoute: typeof TransacoesRoute
   VendasRoute: typeof VendasRoute
 }
@@ -135,6 +148,13 @@ declare module '@tanstack/react-router' {
       path: '/transacoes'
       fullPath: '/transacoes'
       preLoaderRoute: typeof TransacoesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/retiradas': {
+      id: '/retiradas'
+      path: '/retiradas'
+      fullPath: '/retiradas'
+      preLoaderRoute: typeof RetiradasRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reset-password': {
@@ -181,6 +201,7 @@ const rootRouteChildren: RootRouteChildren = {
   EstoqueRoute: EstoqueRoute,
   ProdutosRoute: ProdutosRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  RetiradasRoute: RetiradasRoute,
   TransacoesRoute: TransacoesRoute,
   VendasRoute: VendasRoute,
 }
