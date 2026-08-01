@@ -109,7 +109,9 @@ export function TransactionsView() {
   const totalContasReceber = totalAReceber + totalReceitasPendentesTx;
   const totalSaldoInicial = periodRows.filter((r) => r.type === "saldo_inicial").reduce((s, r) => s + Number(r.total), 0);
   const totalDespesas = periodRows.filter((r) => r.type === "despesa" || r.type === "compra").reduce((s, r) => s + Number(r.total), 0);
-  const saldo = totalSaldoInicial + totalReceitasRecebidas - totalDespesas;
+  const totalRetiradas = periodRows.filter((r) => r.type === "retirada").reduce((s, r) => s + Number(r.total), 0);
+  const saldo = totalSaldoInicial + totalReceitasRecebidas - totalDespesas - totalRetiradas;
+
   const filterCategories = Array.from(new Set(rows.map((r) => r.category))).filter(Boolean);
 
   return (
