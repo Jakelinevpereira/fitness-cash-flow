@@ -17,8 +17,9 @@ import type { Tables } from "@/integrations/supabase/types";
 
 type Tx = Tables<"transactions">;
 
-const TYPES = ["receita", "despesa", "compra", "saldo_inicial"] as const;
-const TYPE_LABEL: Record<string, string> = { receita: "Receita", despesa: "Despesa Operacional", compra: "Compra de Estoque", saldo_inicial: "Saldo Inicial" };
+const TYPES = ["receita", "despesa", "compra", "saldo_inicial", "retirada"] as const;
+const TYPE_LABEL: Record<string, string> = { receita: "Receita", despesa: "Despesa Operacional", compra: "Compra de Estoque", saldo_inicial: "Saldo Inicial", retirada: "Retirada de Lucro" };
+
 const CATEGORIES = ["Maquininha", "Embalagem", "Marketing/Outros", "Frete", "Aluguel", "Salário", "Estoque", "Caixa", "Outros"];
 
 export function TransactionsView() {
@@ -108,7 +109,9 @@ export function TransactionsView() {
   const totalContasReceber = totalAReceber + totalReceitasPendentesTx;
   const totalSaldoInicial = periodRows.filter((r) => r.type === "saldo_inicial").reduce((s, r) => s + Number(r.total), 0);
   const totalDespesas = periodRows.filter((r) => r.type === "despesa" || r.type === "compra").reduce((s, r) => s + Number(r.total), 0);
-  const saldo = totalSaldoInicial + totalReceitasRecebidas - totalDespesas;
+  const totalRetiradas = periodRows.filter((r) => r.type === "retirada").reduce((s, r) => s + Number(r.total), 0);
+  const saldo = totalSaldoInicial + totalReceitasRecebidas - totalDespesas - totalRetiradas;
+
   const filterCategories = Array.from(new Set(rows.map((r) => r.category))).filter(Boolean);
 
   return (

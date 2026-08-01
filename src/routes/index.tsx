@@ -83,7 +83,9 @@ function Dashboard() {
   const receitasExtrasTotal = sum(tx.filter((t) => t.type === "receita"));
   const despesasTotal = sum(tx.filter((t) => t.type === "despesa"));
   const comprasTotal = sum(tx.filter((t) => t.type === "compra"));
-  const saldo = saldoInicial + recebidoTotal + receitasExtrasTotal - despesasTotal - comprasTotal;
+  const retiradasTotal = sum(tx.filter((t) => t.type === "retirada"));
+  const saldo = saldoInicial + recebidoTotal + receitasExtrasTotal - despesasTotal - comprasTotal - retiradasTotal;
+
 
   // Indicadores do período
   const salesP = sales.filter((s) => inPeriod(s.sale_date));
