@@ -17,8 +17,9 @@ import type { Tables } from "@/integrations/supabase/types";
 
 type Tx = Tables<"transactions">;
 
-const TYPES = ["receita", "despesa", "compra", "saldo_inicial"] as const;
-const TYPE_LABEL: Record<string, string> = { receita: "Receita", despesa: "Despesa Operacional", compra: "Compra de Estoque", saldo_inicial: "Saldo Inicial" };
+const TYPES = ["receita", "despesa", "compra", "saldo_inicial", "retirada"] as const;
+const TYPE_LABEL: Record<string, string> = { receita: "Receita", despesa: "Despesa Operacional", compra: "Compra de Estoque", saldo_inicial: "Saldo Inicial", retirada: "Retirada de Lucro" };
+
 const CATEGORIES = ["Maquininha", "Embalagem", "Marketing/Outros", "Frete", "Aluguel", "Salário", "Estoque", "Caixa", "Outros"];
 
 export function TransactionsView() {
