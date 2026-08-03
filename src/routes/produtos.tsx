@@ -139,10 +139,11 @@ function ProductsPage() {
                       <TableHead>Tamanho</TableHead>
                       <TableHead>Cor</TableHead>
 
-                      <TableHead className="text-right">Valor Unitário</TableHead>
-                      <TableHead className="text-right">Valor Total</TableHead>
-                      <TableHead className="text-right">Venda</TableHead>
-                      <TableHead className="text-right">Margem</TableHead>
+                      <TableHead className="text-right">Custo Unit.</TableHead>
+                      <TableHead className="text-right">Venda Unit.</TableHead>
+                      <TableHead className="text-right">Total Custo</TableHead>
+                      <TableHead className="text-right">Total Venda</TableHead>
+                      <TableHead className="text-right">Margem Total</TableHead>
                       <TableHead className="text-right">Est. Inicial</TableHead>
                       <TableHead className="text-right">Vendidos</TableHead>
                       <TableHead className="text-right">Estoque</TableHead>
@@ -151,12 +152,13 @@ function ProductsPage() {
                   </TableHeader>
                   <TableBody>
                     {filtered.length === 0 ? (
-                      <TableRow><TableCell colSpan={12} className="text-center py-8 text-muted-foreground">Nenhum produto</TableCell></TableRow>
+                      <TableRow><TableCell colSpan={13} className="text-center py-8 text-muted-foreground">Nenhum produto</TableCell></TableRow>
                     ) : filtered.map((p) => {
-                      const margin = Number(p.sale_price) - Number(p.cost_price);
+                      const qty = Number(p.stock);
                       const initial = Number((p as Product & { initial_stock?: number }).initial_stock ?? p.stock);
-                      const sold = Math.max(0, initial - Number(p.stock));
-                      const totalCost = Number(p.cost_price) * Number(p.stock);
+                      const sold = Math.max(0, initial - qty);
+                      const totalCost = Number(p.cost_price) * qty;
+                      const totalSale = Number(p.sale_price) * qty;
                       return (
                         <TableRow key={p.id}>
                           <TableCell className="font-medium">{p.name}</TableCell>
@@ -164,9 +166,10 @@ function ProductsPage() {
                           <TableCell>{(p as Product & { size?: string | null }).size ?? "-"}</TableCell>
                           <TableCell>{(p as Product & { color?: string | null }).color ?? "-"}</TableCell>
                           <TableCell className="text-right">{formatBRL(Number(p.cost_price))}</TableCell>
-                          <TableCell className="text-right font-medium">{formatBRL(totalCost)}</TableCell>
                           <TableCell className="text-right">{formatBRL(Number(p.sale_price))}</TableCell>
-                          <TableCell className="text-right text-success font-medium">{formatBRL(margin)}</TableCell>
+                          <TableCell className="text-right font-medium">{formatBRL(totalCost)}</TableCell>
+                          <TableCell className="text-right font-medium">{formatBRL(totalSale)}</TableCell>
+                          <TableCell className="text-right text-success font-medium">{formatBRL(totalSale - totalCost)}</TableCell>
                           <TableCell className="text-right text-muted-foreground">{initial}</TableCell>
                           <TableCell className="text-right">{sold > 0 ? <Badge variant="secondary">{sold}</Badge> : <span className="text-muted-foreground">0</span>}</TableCell>
                           <TableCell className="text-right"><Badge variant={p.stock > 0 ? "secondary" : "outline"}>{p.stock}</Badge></TableCell>
@@ -185,7 +188,8 @@ function ProductsPage() {
                       <TableRow>
                         <TableCell colSpan={4} className="text-right font-semibold">Totais (estoque)</TableCell>
                         <TableCell></TableCell>
-                        <TableCell className="text-right">{formatBRL(totalCostValue)}</TableCell>
+                        <TableCell></TableCell>
+                        <TableCell className="text-right font-bold">{formatBRL(totalCostValue)}</TableCell>
                         <TableCell className="text-right text-success font-bold">{formatBRL(totalStockValue)}</TableCell>
                         <TableCell className="text-right text-success font-bold">{formatBRL(totalStockValue - totalCostValue)}</TableCell>
                         <TableCell className="text-right text-muted-foreground">{totalInitialStock}</TableCell>
@@ -195,6 +199,7 @@ function ProductsPage() {
                       </TableRow>
                     </tfoot>
                   )}
+
                 </Table>
               </CardContent>
             </Card>
