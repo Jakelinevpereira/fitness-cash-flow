@@ -125,9 +125,12 @@ function SalesPage() {
   };
 
   const filtered = filterMonth(rows);
+  const pagoEfetivo = (r: Sale) => isReceived(r.payment_method) ? Number(r.total) : Number((r as Sale & { paid_amount?: number }).paid_amount ?? 0);
+  const faltaPagar = (r: Sale) => Math.max(0, Number(r.total) - pagoEfetivo(r));
   const filteredTotal = filtered.reduce((s, r) => s + Number(r.total), 0);
-  const filteredRecebido = filtered.filter((r) => isReceived(r.payment_method)).reduce((s, r) => s + Number(r.total), 0);
-  const filteredAReceber = filteredTotal - filteredRecebido;
+  const filteredRecebido = filtered.reduce((s, r) => s + pagoEfetivo(r), 0);
+  const filteredAReceber = filtered.reduce((s, r) => s + faltaPagar(r), 0);
+
 
 
   const generatePDF = () => {
