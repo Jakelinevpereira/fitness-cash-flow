@@ -370,12 +370,14 @@ function SalesPage() {
 }
 
 function SaleDialog({ editing, products, onSubmit, loading }: { editing: Sale | null; products: Product[]; onSubmit: (d: Partial<Sale> & { id?: string }) => void; loading: boolean }) {
+  const editPaid = String((editing as (Sale & { paid_amount?: number }) | null)?.paid_amount ?? 0);
   const [f, setF] = useState({
     product_id: editing?.product_id ?? "",
     product_name: editing?.product_name ?? "",
     customer_name: editing?.customer_name ?? "",
     quantity: String(editing?.quantity ?? 1),
     unit_price: String(editing?.unit_price ?? 0),
+    paid_amount: editPaid,
     payment_method: editing?.payment_method ?? "A receber",
     sale_date: editing?.sale_date ?? toISODate(new Date()),
   });
@@ -386,11 +388,15 @@ function SaleDialog({ editing, products, onSubmit, loading }: { editing: Sale | 
       customer_name: editing?.customer_name ?? "",
       quantity: String(editing?.quantity ?? 1),
       unit_price: String(editing?.unit_price ?? 0),
+      paid_amount: editPaid,
       payment_method: editing?.payment_method ?? "A receber",
       sale_date: editing?.sale_date ?? toISODate(new Date()),
     });
-  }, [editing]);
+  }, [editing, editPaid]);
   const total = (Number(f.quantity) || 0) * (Number(f.unit_price) || 0);
+  const pagoAgora = Math.min(Number(f.paid_amount) || 0, total);
+  const restante = Math.max(0, total - pagoAgora);
+
 
   return (
     <DialogContent>
