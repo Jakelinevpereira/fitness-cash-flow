@@ -476,7 +476,9 @@ function SaleDialog({ editing, products, onSubmit, loading }: { editing: Sale | 
               customer_name: f.customer_name || null,
               quantity: qty,
               unit_price: Number(f.unit_price),
+              paid_amount: pagoAgora,
               payment_method: f.payment_method,
+
               sale_date: toISODate(f.sale_date),
             })}>{semEstoque ? "Estoque insuficiente" : "Salvar"}</Button>
           );
