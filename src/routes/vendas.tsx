@@ -316,15 +316,17 @@ function SalesPage() {
                   <TableHead className="text-right">Qtd</TableHead>
                   <TableHead className="text-right">Unit.</TableHead>
                   <TableHead className="text-right">Total</TableHead>
+                  <TableHead className="text-right">Pago</TableHead>
+                  <TableHead className="text-right">Falta</TableHead>
                   <TableHead>Pagamento</TableHead>
                   <TableHead className="w-24"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filtered.length === 0 ? (
-                  <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">Nenhuma venda</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={10} className="text-center py-8 text-muted-foreground">Nenhuma venda</TableCell></TableRow>
                 ) : filtered.map((r) => {
-                  const pendente = r.payment_method === "A pagar" || r.payment_method === "A receber";
+                  const pendente = faltaPagar(r) > 0;
                   return (
                   <TableRow key={r.id}>
                     <TableCell>{formatDate(r.sale_date)}</TableCell>
@@ -333,6 +335,8 @@ function SalesPage() {
                     <TableCell className="text-right">{r.quantity}</TableCell>
                     <TableCell className="text-right">{formatBRL(Number(r.unit_price))}</TableCell>
                     <TableCell className={`text-right font-semibold ${pendente ? "text-destructive" : "text-success"}`}>{formatBRL(Number(r.total))}</TableCell>
+                    <TableCell className="text-right text-success">{formatBRL(pagoEfetivo(r))}</TableCell>
+                    <TableCell className={`text-right ${pendente ? "text-destructive font-semibold" : "text-muted-foreground"}`}>{formatBRL(faltaPagar(r))}</TableCell>
                     <TableCell className={pendente ? "text-destructive font-medium" : ""}>{r.payment_method === "A pagar" ? "A receber" : (r.payment_method ?? "-")}</TableCell>
                     <TableCell>
                       <div className="flex gap-1 justify-end">
@@ -345,6 +349,7 @@ function SalesPage() {
                 })}
               </TableBody>
               {filtered.length > 0 && (
+
                 <tfoot className="border-t bg-muted/50 font-medium">
                   <TableRow>
                     <TableCell colSpan={5} className="text-right font-semibold">Total filtrado</TableCell>
