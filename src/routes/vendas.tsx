@@ -125,9 +125,12 @@ function SalesPage() {
   };
 
   const filtered = filterMonth(rows);
+  const pagoEfetivo = (r: Sale) => isReceived(r.payment_method) ? Number(r.total) : Number((r as Sale & { paid_amount?: number }).paid_amount ?? 0);
+  const faltaPagar = (r: Sale) => Math.max(0, Number(r.total) - pagoEfetivo(r));
   const filteredTotal = filtered.reduce((s, r) => s + Number(r.total), 0);
-  const filteredRecebido = filtered.filter((r) => isReceived(r.payment_method)).reduce((s, r) => s + Number(r.total), 0);
-  const filteredAReceber = filteredTotal - filteredRecebido;
+  const filteredRecebido = filtered.reduce((s, r) => s + pagoEfetivo(r), 0);
+  const filteredAReceber = filtered.reduce((s, r) => s + faltaPagar(r), 0);
+
 
 
   const generatePDF = () => {
@@ -313,15 +316,17 @@ function SalesPage() {
                   <TableHead className="text-right">Qtd</TableHead>
                   <TableHead className="text-right">Unit.</TableHead>
                   <TableHead className="text-right">Total</TableHead>
+                  <TableHead className="text-right">Pago</TableHead>
+                  <TableHead className="text-right">Falta</TableHead>
                   <TableHead>Pagamento</TableHead>
                   <TableHead className="w-24"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filtered.length === 0 ? (
-                  <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">Nenhuma venda</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={10} className="text-center py-8 text-muted-foreground">Nenhuma venda</TableCell></TableRow>
                 ) : filtered.map((r) => {
-                  const pendente = r.payment_method === "A pagar" || r.payment_method === "A receber";
+                  const pendente = faltaPagar(r) > 0;
                   return (
                   <TableRow key={r.id}>
                     <TableCell>{formatDate(r.sale_date)}</TableCell>
@@ -330,6 +335,8 @@ function SalesPage() {
                     <TableCell className="text-right">{r.quantity}</TableCell>
                     <TableCell className="text-right">{formatBRL(Number(r.unit_price))}</TableCell>
                     <TableCell className={`text-right font-semibold ${pendente ? "text-destructive" : "text-success"}`}>{formatBRL(Number(r.total))}</TableCell>
+                    <TableCell className="text-right text-success">{formatBRL(pagoEfetivo(r))}</TableCell>
+                    <TableCell className={`text-right ${pendente ? "text-destructive font-semibold" : "text-muted-foreground"}`}>{formatBRL(faltaPagar(r))}</TableCell>
                     <TableCell className={pendente ? "text-destructive font-medium" : ""}>{r.payment_method === "A pagar" ? "A receber" : (r.payment_method ?? "-")}</TableCell>
                     <TableCell>
                       <div className="flex gap-1 justify-end">
@@ -342,12 +349,16 @@ function SalesPage() {
                 })}
               </TableBody>
               {filtered.length > 0 && (
+
                 <tfoot className="border-t bg-muted/50 font-medium">
                   <TableRow>
                     <TableCell colSpan={5} className="text-right font-semibold">Total filtrado</TableCell>
                     <TableCell className="text-right font-bold text-success">{formatBRL(filteredTotal)}</TableCell>
+                    <TableCell className="text-right font-bold text-success">{formatBRL(filteredRecebido)}</TableCell>
+                    <TableCell className="text-right font-bold text-destructive">{formatBRL(filteredAReceber)}</TableCell>
                     <TableCell colSpan={2}></TableCell>
                   </TableRow>
+
                 </tfoot>
               )}
             </Table>
@@ -359,12 +370,14 @@ function SalesPage() {
 }
 
 function SaleDialog({ editing, products, onSubmit, loading }: { editing: Sale | null; products: Product[]; onSubmit: (d: Partial<Sale> & { id?: string }) => void; loading: boolean }) {
+  const editPaid = String((editing as (Sale & { paid_amount?: number }) | null)?.paid_amount ?? 0);
   const [f, setF] = useState({
     product_id: editing?.product_id ?? "",
     product_name: editing?.product_name ?? "",
     customer_name: editing?.customer_name ?? "",
     quantity: String(editing?.quantity ?? 1),
     unit_price: String(editing?.unit_price ?? 0),
+    paid_amount: editPaid,
     payment_method: editing?.payment_method ?? "A receber",
     sale_date: editing?.sale_date ?? toISODate(new Date()),
   });
@@ -375,11 +388,15 @@ function SaleDialog({ editing, products, onSubmit, loading }: { editing: Sale | 
       customer_name: editing?.customer_name ?? "",
       quantity: String(editing?.quantity ?? 1),
       unit_price: String(editing?.unit_price ?? 0),
+      paid_amount: editPaid,
       payment_method: editing?.payment_method ?? "A receber",
       sale_date: editing?.sale_date ?? toISODate(new Date()),
     });
-  }, [editing]);
+  }, [editing, editPaid]);
   const total = (Number(f.quantity) || 0) * (Number(f.unit_price) || 0);
+  const pagoAgora = Math.min(Number(f.paid_amount) || 0, total);
+  const restante = Math.max(0, total - pagoAgora);
+
 
   return (
     <DialogContent>
@@ -418,6 +435,17 @@ function SaleDialog({ editing, products, onSubmit, loading }: { editing: Sale | 
           <Fld label="Preço unit."><Input type="number" step="0.01" value={f.unit_price} onChange={(e) => setF({ ...f, unit_price: e.target.value })} /></Fld>
           <Fld label="Total"><Input value={formatBRL(total)} disabled /></Fld>
         </div>
+        <div className="grid grid-cols-3 gap-3">
+          <Fld label="Valor pago agora">
+            <Input type="number" step="0.01" value={f.paid_amount} onChange={(e) => setF({ ...f, paid_amount: e.target.value })} />
+          </Fld>
+          <Fld label="Falta pagar">
+            <Input value={formatBRL(restante)} disabled className={restante > 0 ? "text-destructive" : ""} />
+          </Fld>
+          <Fld label="&nbsp;">
+            <Button type="button" variant="outline" className="w-full" onClick={() => setF({ ...f, paid_amount: String(total) })}>Pagou tudo</Button>
+          </Fld>
+        </div>
         <div className="grid grid-cols-2 gap-3">
           <Fld label="Data"><DateBRInput className="w-full" value={f.sale_date} onChange={(iso) => setF({ ...f, sale_date: iso })} /></Fld>
           <Fld label="Pagamento">
@@ -432,6 +460,7 @@ function SaleDialog({ editing, products, onSubmit, loading }: { editing: Sale | 
             </Select>
           </Fld>
         </div>
+
       </div>
       <DialogFooter>
         {(() => {
@@ -447,7 +476,9 @@ function SaleDialog({ editing, products, onSubmit, loading }: { editing: Sale | 
               customer_name: f.customer_name || null,
               quantity: qty,
               unit_price: Number(f.unit_price),
+              paid_amount: pagoAgora,
               payment_method: f.payment_method,
+
               sale_date: toISODate(f.sale_date),
             })}>{semEstoque ? "Estoque insuficiente" : "Salvar"}</Button>
           );
