@@ -435,6 +435,17 @@ function SaleDialog({ editing, products, onSubmit, loading }: { editing: Sale | 
           <Fld label="Preço unit."><Input type="number" step="0.01" value={f.unit_price} onChange={(e) => setF({ ...f, unit_price: e.target.value })} /></Fld>
           <Fld label="Total"><Input value={formatBRL(total)} disabled /></Fld>
         </div>
+        <div className="grid grid-cols-3 gap-3">
+          <Fld label="Valor pago agora">
+            <Input type="number" step="0.01" value={f.paid_amount} onChange={(e) => setF({ ...f, paid_amount: e.target.value })} />
+          </Fld>
+          <Fld label="Falta pagar">
+            <Input value={formatBRL(restante)} disabled className={restante > 0 ? "text-destructive" : ""} />
+          </Fld>
+          <Fld label="&nbsp;">
+            <Button type="button" variant="outline" className="w-full" onClick={() => setF({ ...f, paid_amount: String(total) })}>Pagou tudo</Button>
+          </Fld>
+        </div>
         <div className="grid grid-cols-2 gap-3">
           <Fld label="Data"><DateBRInput className="w-full" value={f.sale_date} onChange={(iso) => setF({ ...f, sale_date: iso })} /></Fld>
           <Fld label="Pagamento">
@@ -449,6 +460,7 @@ function SaleDialog({ editing, products, onSubmit, loading }: { editing: Sale | 
             </Select>
           </Fld>
         </div>
+
       </div>
       <DialogFooter>
         {(() => {
