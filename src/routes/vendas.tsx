@@ -354,8 +354,11 @@ function SalesPage() {
                   <TableRow>
                     <TableCell colSpan={5} className="text-right font-semibold">Total filtrado</TableCell>
                     <TableCell className="text-right font-bold text-success">{formatBRL(filteredTotal)}</TableCell>
+                    <TableCell className="text-right font-bold text-success">{formatBRL(filteredRecebido)}</TableCell>
+                    <TableCell className="text-right font-bold text-destructive">{formatBRL(filteredAReceber)}</TableCell>
                     <TableCell colSpan={2}></TableCell>
                   </TableRow>
+
                 </tfoot>
               )}
             </Table>
