@@ -76,10 +76,13 @@ function Dashboard() {
 
   const sum = (arr: { total: number | string }[]) => arr.reduce((s, t) => s + Number(t.total), 0);
   const isPending = (s: { payment_method?: string | null }) => RECEIVED_PENDING.includes(s.payment_method ?? "");
+  const paidOf = (s: { total: number | string; payment_method?: string | null; paid_amount?: number | string | null }) =>
+    isPending(s) ? Number(s.paid_amount ?? 0) : Number(s.total);
+  const sumPaid = (arr: Parameters<typeof paidOf>[0][]) => arr.reduce((acc, s) => acc + paidOf(s), 0);
 
   // Saldo em caixa: sempre acumulado (não depende do filtro de período)
   const saldoInicial = sum(tx.filter((t) => t.type === "saldo_inicial"));
-  const recebidoTotal = sum(sales.filter((s) => !isPending(s)));
+  const recebidoTotal = sumPaid(sales);
   const receitasExtrasTotal = sum(tx.filter((t) => t.type === "receita"));
   const despesasTotal = sum(tx.filter((t) => t.type === "despesa"));
   const comprasTotal = sum(tx.filter((t) => t.type === "compra"));
@@ -91,7 +94,8 @@ function Dashboard() {
   const salesP = sales.filter((s) => inPeriod(s.sale_date));
   const txP = tx.filter((t) => inPeriod(t.transaction_date));
   const faturamento = sum(salesP);
-  const aReceber = sum(salesP.filter(isPending));
+  const aReceber = salesP.filter(isPending).reduce((acc, s) => acc + (Number(s.total) - Number(s.paid_amount ?? 0)), 0);
+
   const despesasOp = sum(txP.filter((t) => t.type === "despesa"));
 
   const costById = useMemo(() => {
