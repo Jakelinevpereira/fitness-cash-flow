@@ -91,7 +91,7 @@ function Retiradas() {
 
   const retiradas = useMemo(() => tx.filter((t) => t.type === "retirada"), [tx]);
   const capitalInicial = sum(tx.filter((t) => t.type === "saldo_inicial"));
-  const recebido = sum(sales.filter((s) => !isPending(s)));
+  const recebido = sales.reduce((acc, s) => acc + (isPending(s) ? Number((s as { paid_amount?: number }).paid_amount ?? 0) : Number(s.total)), 0);
   const receitasExtras = sum(tx.filter((t) => t.type === "receita"));
   const despesas = sum(tx.filter((t) => t.type === "despesa"));
   const compras = sum(tx.filter((t) => t.type === "compra"));

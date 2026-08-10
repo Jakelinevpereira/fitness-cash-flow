@@ -100,8 +100,8 @@ export function TransactionsView() {
     return true;
   });
   const isPending = (pm: string | null) => pm === "A receber" || pm === "A pagar";
-  const totalVendasRecebidas = periodSales.filter((r) => !isPending(r.payment_method)).reduce((s, r) => s + Number(r.total), 0);
-  const totalAReceber = periodSales.filter((r) => isPending(r.payment_method)).reduce((s, r) => s + Number(r.total), 0);
+  const totalVendasRecebidas = periodSales.reduce((s, r) => s + (isPending(r.payment_method) ? Number(r.paid_amount ?? 0) : Number(r.total)), 0);
+  const totalAReceber = periodSales.filter((r) => isPending(r.payment_method)).reduce((s, r) => s + (Number(r.total) - Number(r.paid_amount ?? 0)), 0);
   const totalReceitasTx = periodRows.filter((r) => r.type === "receita" && r.paid).reduce((s, r) => s + Number(r.total), 0);
   const totalReceitasPendentesTx = periodRows.filter((r) => r.type === "receita" && !r.paid).reduce((s, r) => s + Number(r.total), 0);
   const totalReceitasRecebidas = totalReceitasTx + totalVendasRecebidas;
