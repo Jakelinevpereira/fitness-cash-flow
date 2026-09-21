@@ -393,6 +393,11 @@ function SaleDialog({ editing, products, onSubmit, loading }: { editing: Sale | 
       sale_date: editing?.sale_date ?? toISODate(new Date()),
     });
   }, [editing, editPaid]);
+  const [priceMode, setPriceMode] = useState<"vista" | "cartao">("vista");
+  const priceOf = (p: Product, mode: "vista" | "cartao") => {
+    const card = Number((p as Product & { card_price?: number }).card_price ?? 0);
+    return mode === "cartao" && card > 0 ? card : Number(p.sale_price);
+  };
   const total = (Number(f.quantity) || 0) * (Number(f.unit_price) || 0);
   const pagoAgora = Math.min(Number(f.paid_amount) || 0, total);
   const restante = Math.max(0, total - pagoAgora);
@@ -408,7 +413,7 @@ function SaleDialog({ editing, products, onSubmit, loading }: { editing: Sale | 
           ) : (
             <Select value={f.product_id} onValueChange={(v) => {
               const p = products.find((x) => x.id === v);
-              if (p) setF({ ...f, product_id: p.id, product_name: p.name, unit_price: String(p.sale_price) });
+              if (p) setF({ ...f, product_id: p.id, product_name: p.name, unit_price: String(priceOf(p, priceMode)) });
             }}>
               <SelectTrigger><SelectValue placeholder="Selecione um produto do estoque" /></SelectTrigger>
               <SelectContent>
