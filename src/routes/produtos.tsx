@@ -295,7 +295,11 @@ function ProductDialog({ editing, onSubmit, loading }: { editing: Product | null
         </div>
         <div className="grid grid-cols-3 gap-3">
           <Fld label="Custo"><Input type="number" step="0.01" value={f.cost_price} onChange={(ev) => setF({ ...f, cost_price: ev.target.value })} /></Fld>
-          <Fld label="Venda à vista"><Input type="number" step="0.01" value={f.sale_price} onChange={(ev) => setF({ ...f, sale_price: ev.target.value })} /></Fld>
+          <Fld label="Venda à vista"><Input type="number" step="0.01" value={f.sale_price} onChange={(ev) => {
+            const v = ev.target.value;
+            const n = Number(v);
+            setF((prev) => ({ ...prev, sale_price: v, card_price: Number.isFinite(n) && n > 0 ? (n * 1.1).toFixed(2) : prev.card_price }));
+          }} /></Fld>
           <Fld label="Venda no cartão"><Input type="number" step="0.01" value={f.card_price} onChange={(ev) => setF({ ...f, card_price: ev.target.value })} /></Fld>
         </div>
         <div className="grid grid-cols-2 gap-3">
