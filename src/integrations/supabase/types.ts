@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       products: {
         Row: {
+          card_price: number
           category: string | null
           color: string | null
           cost_price: number
@@ -29,6 +30,7 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          card_price?: number
           category?: string | null
           color?: string | null
           cost_price?: number
@@ -42,6 +44,7 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          card_price?: number
           category?: string | null
           color?: string | null
           cost_price?: number
