@@ -140,7 +140,8 @@ function ProductsPage() {
                       <TableHead>Cor</TableHead>
 
                       <TableHead className="text-right">Custo Unit.</TableHead>
-                      <TableHead className="text-right">Venda Unit.</TableHead>
+                      <TableHead className="text-right">Venda à vista</TableHead>
+                      <TableHead className="text-right">Venda cartão</TableHead>
                       <TableHead className="text-right">Total Custo</TableHead>
                       <TableHead className="text-right">Total Venda</TableHead>
                       <TableHead className="text-right">Margem Total</TableHead>
@@ -152,7 +153,7 @@ function ProductsPage() {
                   </TableHeader>
                   <TableBody>
                     {filtered.length === 0 ? (
-                      <TableRow><TableCell colSpan={13} className="text-center py-8 text-muted-foreground">Nenhum produto</TableCell></TableRow>
+                      <TableRow><TableCell colSpan={14} className="text-center py-8 text-muted-foreground">Nenhum produto</TableCell></TableRow>
                     ) : filtered.map((p) => {
                       const qty = Number(p.stock);
                       const initial = Number((p as Product & { initial_stock?: number }).initial_stock ?? p.stock);
@@ -167,6 +168,7 @@ function ProductsPage() {
                           <TableCell>{(p as Product & { color?: string | null }).color ?? "-"}</TableCell>
                           <TableCell className="text-right">{formatBRL(Number(p.cost_price))}</TableCell>
                           <TableCell className="text-right">{formatBRL(Number(p.sale_price))}</TableCell>
+                          <TableCell className="text-right">{formatBRL(Number((p as Product & { card_price?: number }).card_price ?? 0))}</TableCell>
                           <TableCell className="text-right font-medium">{formatBRL(totalCost)}</TableCell>
                           <TableCell className="text-right font-medium">{formatBRL(totalSale)}</TableCell>
                           <TableCell className="text-right text-success font-medium">{formatBRL(totalSale - totalCost)}</TableCell>
@@ -187,6 +189,7 @@ function ProductsPage() {
                     <tfoot className="border-t bg-muted/50 font-medium">
                       <TableRow>
                         <TableCell colSpan={4} className="text-right font-semibold">Totais (estoque)</TableCell>
+                        <TableCell></TableCell>
                         <TableCell></TableCell>
                         <TableCell></TableCell>
                         <TableCell className="text-right font-bold">{formatBRL(totalCostValue)}</TableCell>
@@ -215,6 +218,7 @@ function ProductsPage() {
                       <TableHead>Categoria</TableHead>
                       <TableHead className="text-right">Custo</TableHead>
                       <TableHead className="text-right">Venda</TableHead>
+                      <TableHead className="text-right">Cartão</TableHead>
                       <TableHead className="text-right">Est. Inicial</TableHead>
                       <TableHead className="text-right">Vendidos</TableHead>
                       <TableHead className="text-right">Estoque</TableHead>
@@ -223,7 +227,7 @@ function ProductsPage() {
                   </TableHeader>
                   <TableBody>
                     {zeroProducts.length === 0 ? (
-                      <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">Nenhum produto com estoque zerado</TableCell></TableRow>
+                      <TableRow><TableCell colSpan={9} className="text-center py-8 text-muted-foreground">Nenhum produto com estoque zerado</TableCell></TableRow>
                     ) : zeroProducts.map((p) => {
                       const initial = Number((p as Product & { initial_stock?: number }).initial_stock ?? 0);
                       const sold = Math.max(0, initial - Number(p.stock));
@@ -233,6 +237,7 @@ function ProductsPage() {
                           <TableCell>{p.category ?? "-"}</TableCell>
                           <TableCell className="text-right">{formatBRL(Number(p.cost_price))}</TableCell>
                           <TableCell className="text-right">{formatBRL(Number(p.sale_price))}</TableCell>
+                          <TableCell className="text-right">{formatBRL(Number((p as Product & { card_price?: number }).card_price ?? 0))}</TableCell>
                           <TableCell className="text-right text-muted-foreground">{initial}</TableCell>
                           <TableCell className="text-right">{sold > 0 ? <Badge variant="secondary">{sold}</Badge> : <span className="text-muted-foreground">0</span>}</TableCell>
                           <TableCell className="text-right"><Badge variant="outline">0</Badge></TableCell>
@@ -263,7 +268,7 @@ function ProductsPage() {
   );
 }
 
-type ProductExtras = Product & { initial_stock?: number; size?: string | null; color?: string | null };
+type ProductExtras = Product & { initial_stock?: number; size?: string | null; color?: string | null; card_price?: number };
 
 function ProductDialog({ editing, onSubmit, loading }: { editing: Product | null; onSubmit: (d: Partial<Product> & { id?: string }) => void; loading: boolean }) {
   const e = editing as ProductExtras | null;
@@ -274,6 +279,7 @@ function ProductDialog({ editing, onSubmit, loading }: { editing: Product | null
     color: e?.color ?? "",
     cost_price: String(editing?.cost_price ?? 0),
     sale_price: String(editing?.sale_price ?? 0),
+    card_price: String(e?.card_price ?? 0),
     stock: String(editing?.stock ?? 0),
     initial_stock: String(e?.initial_stock ?? editing?.stock ?? 0),
   });
