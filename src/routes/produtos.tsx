@@ -293,9 +293,10 @@ function ProductDialog({ editing, onSubmit, loading }: { editing: Product | null
           <Fld label="Tamanho"><Input value={f.size} onChange={(ev) => setF({ ...f, size: ev.target.value })} placeholder="Ex: P, M, G, GG" /></Fld>
           <Fld label="Cor"><Input value={f.color} onChange={(ev) => setF({ ...f, color: ev.target.value })} placeholder="Ex: Preto" /></Fld>
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-3 gap-3">
           <Fld label="Custo"><Input type="number" step="0.01" value={f.cost_price} onChange={(ev) => setF({ ...f, cost_price: ev.target.value })} /></Fld>
-          <Fld label="Venda"><Input type="number" step="0.01" value={f.sale_price} onChange={(ev) => setF({ ...f, sale_price: ev.target.value })} /></Fld>
+          <Fld label="Venda à vista"><Input type="number" step="0.01" value={f.sale_price} onChange={(ev) => setF({ ...f, sale_price: ev.target.value })} /></Fld>
+          <Fld label="Venda no cartão"><Input type="number" step="0.01" value={f.card_price} onChange={(ev) => setF({ ...f, card_price: ev.target.value })} /></Fld>
         </div>
         <div className="grid grid-cols-2 gap-3">
           <Fld label="Estoque inicial"><Input type="number" value={f.initial_stock} onChange={(ev) => {
@@ -306,7 +307,7 @@ function ProductDialog({ editing, onSubmit, loading }: { editing: Product | null
         </div>
       </div>
       <DialogFooter>
-        <Button disabled={loading || !f.name} onClick={() => onSubmit({ id: editing?.id, name: f.name, category: f.category || null, size: f.size || null, color: f.color || null, cost_price: Number(f.cost_price), sale_price: Number(f.sale_price), stock: Number(f.stock), initial_stock: Number(f.initial_stock) } as Partial<Product> & { id?: string })}>Salvar</Button>
+        <Button disabled={loading || !f.name} onClick={() => onSubmit({ id: editing?.id, name: f.name, category: f.category || null, size: f.size || null, color: f.color || null, cost_price: Number(f.cost_price), sale_price: Number(f.sale_price), card_price: Number(f.card_price), stock: Number(f.stock), initial_stock: Number(f.initial_stock) } as Partial<Product> & { id?: string })}>Salvar</Button>
       </DialogFooter>
     </DialogContent>
   );
