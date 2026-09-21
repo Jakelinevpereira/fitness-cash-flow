@@ -435,6 +435,23 @@ function SaleDialog({ editing, products, onSubmit, loading }: { editing: Sale | 
           })()}
         </Fld>
         <Fld label="Cliente"><Input placeholder="Nome do comprador" value={f.customer_name} onChange={(e) => setF({ ...f, customer_name: e.target.value })} /></Fld>
+        <Fld label="Tipo de preço">
+          <div className="grid grid-cols-2 gap-2">
+            {(["vista", "cartao"] as const).map((m) => (
+              <Button key={m} type="button" variant={priceMode === m ? "default" : "outline"} onClick={() => {
+                setPriceMode(m);
+                const p = products.find((x) => x.id === f.product_id);
+                if (p) setF({ ...f, unit_price: String(priceOf(p, m)) });
+              }}>{m === "vista" ? "À vista" : "Cartão"}</Button>
+            ))}
+          </div>
+          {(() => {
+            const p = products.find((x) => x.id === f.product_id);
+            if (!p) return null;
+            const card = Number((p as Product & { card_price?: number }).card_price ?? 0);
+            return <p className="text-xs text-muted-foreground mt-1">À vista: {formatBRL(Number(p.sale_price))} · Cartão: {card > 0 ? formatBRL(card) : "não cadastrado"}</p>;
+          })()}
+        </Fld>
         <div className="grid grid-cols-3 gap-3">
           <Fld label="Quantidade"><Input type="number" value={f.quantity} onChange={(e) => setF({ ...f, quantity: e.target.value })} /></Fld>
           <Fld label="Preço unit."><Input type="number" step="0.01" value={f.unit_price} onChange={(e) => setF({ ...f, unit_price: e.target.value })} /></Fld>
